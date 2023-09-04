@@ -49,7 +49,7 @@ def plot_line(points, line_style='-', color='blue'):
     plt.plot(x, y, line_style, color=color)
     for txt in points:
         if (txt[0] != 0) or (txt[1] != 0):
-            plt.text(txt[0], txt[1], f'({txt[0]}, {txt[1]})', ha='right', va="top")
+            plt.text(txt[0], txt[1], f'({txt[0]}, {txt[1]})', ha='left', va="center")
     plt.scatter(x, y, color=color)
 
 
@@ -158,6 +158,12 @@ def index():
                 background-color: #4CAF50;
                 color: white;
             }
+
+            #pointsTable td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                font-size: 20px;  /* Increase the font size */
+            }
         </style>
     </head>
     <body>
@@ -180,8 +186,8 @@ def index():
     <table id="pointsTable">
         <thead>
             <tr>
-                <th>X</th>
-                <th>Y</th>
+                <th>Flow (gpm)</th>
+                <th>Pressure (psi)</th>
             </tr>
         </thead>
         <tbody>
