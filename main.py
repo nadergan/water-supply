@@ -43,15 +43,29 @@ class HydraulicN185Transform(mtransforms.Transform):
 scale.register_scale(HydraulicN185Scale)
 
 
+# Draw the Chart lines
 def plot_line(points, line_style='-', color='blue'):
     x, y = zip(*points)
     plt.plot(x, y, line_style, color=color)
     for txt in points:
         if (txt[0] != 0) or (txt[1] != 0):
-            plt.text(txt[0], txt[1], f'({txt[0]}, {txt[1]})', ha='right', va="top")
+            plt.text(txt[0], txt[1], f'({txt[0]}, {txt[1]})', ha='left', va="center")
     plt.scatter(x, y, color=color)
 
 
+## Calculate the Q0 and Q20
+def calculated_samples(points):
+    y1 = points[0][1]
+    x2 = points[1][0]
+    y2 = points[1][1]
+    
+    k   = (x2) / ( (y1-y2) ** ( 1.0 / 1.85 ) )
+    Q0  = int( k * (  y1  ** (1.0 / 1.85) ) )
+    Q20 = int( k * ( ( y1 - 20 ) ** (1.0 / 1.85) ) )
+    return [ [Q20, 20], [Q0, 0] ]
+
+
+## 
 def main(save_path, first_line_points, second_line_points):
     plt.rc('lines', linewidth=2, color='red')
     plt.rc('grid', linestyle="-", color='black')
@@ -64,9 +78,6 @@ def main(save_path, first_line_points, second_line_points):
     # Set the X-Axis and Y-Axis Limit values
     last_point_x = int(first_line_points[-1][0])
     first_point_y = int(first_line_points[0][1])
-
-    print(f"Chart X-Axis limit is {last_point_x}", file=sys.stderr)
-    print(f"Chart Y-Axis limit is {first_point_y}", file=sys.stderr)
 
     ax.set_xlim([0, int(last_point_x * 1.05 )])
     ax.set_ylim([0, int(first_point_y * 1.3 )])
@@ -110,7 +121,7 @@ def index():
                 font-weight: bold;
             }
             input[type="text"] {
-                width: 10%;
+                width: 7%;
                 padding: 8px;
                 margin: 8px 0;
                 box-sizing: border-box;
@@ -129,30 +140,81 @@ def index():
             input[type="submit"]:hover {
                 background-color: #45a049;
             }
+
+
+            #pointsTable {
+                width: 10%;
+                border-collapse: collapse;
+            }
+            #pointsTable th, #pointsTable td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+            #pointsTable tr:nth-child(even){background-color: #f2f2f2;}
+            #pointsTable tr:hover {background-color: #ddd;}
+            #pointsTable th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: #4CAF50;
+                color: white;
+            }
+
+            #pointsTable td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                font-size: 20px;  /* Increase the font size */
+            }
         </style>
     </head>
     <body>
     <form id="plotForm">
+        
         <h1>Water Supply Analysis</h1>
 
         <h2>First Line Points:</h2>
-        <b>Point 1:</b> X: <input type="text" class="first-line x" value="0"> Y: <input type="text" class="first-line y" value="75"><br>
-        <b>Point 2:</b> X: <input type="text" class="first-line x" value="699"> Y: <input type="text" class="first-line y" value="55"><br>
-        <b>Point 3:</b> X: <input type="text" class="first-line x" value="1208"> Y: <input type="text" class="first-line y" value="20"><br>
+        <b>Measurement 1:</b> Flow (GPM): <input type="text" class="first-line x" value="0"> Pressure (PSI): <input type="text" class="first-line y" value="0"><br>
+        <b>Measurement 2:</b> Flow (GPM): <input type="text" class="first-line x" value="0"> Pressure (PSI): <input type="text" class="first-line y" value="0"><br>
 
         <br>
+        
+        <label>
+            <input type="checkbox" id="toggleInputs"> Add Second Line Points!
+        </label>
+        <br>
+        <br>
+        <div id="secondLinePoints" style="display: none;">
+            <h2>Second Line Points:</h2>
+            <b>Point 1:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
+            <b>Point 2:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
+            <br><br>
+        </div>
 
-        <h2>Second Line Points:</h2>
-        <b>Point 1:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
-        <b>Point 2:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
-        <b>Point 3:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
-        <br><br>
-        <input type="submit" value="Show Chart">
+        <input type="submit" id="submitButton" value="Show Chart">
+
     </form>
 
-    <h2>Generated Chart:</h2>
-    <p>Chart URL: <a id="serverURL" href=""></a></p>
-    <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none; width:800px; height:600px;">
+    <div id="tableArea" style="display: none;">
+        <br> 
+        <h2> Data Points Table:</h2>
+        <table id="pointsTable">
+            <thead>
+                <tr>
+                    <th>Flow (gpm)</th>
+                    <th>Pressure (psi)</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="chartArea" style="display: none;">
+        <br>
+        <h2>Generated Graph:</h2>
+        <p>Chart URL: <a id="serverURL" href=""></a></p>
+        <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none; width:800px; height:600px;">
+    </div>
 
     <script>
         function collectPoints(className) {
@@ -162,6 +224,24 @@ def index():
             return xs.map((x, i) => [x, ys[i]]);
         }
 
+        function checkInputs() {
+            const yInputs = Array.from(document.querySelectorAll('.first-line.y'));
+            const submitButton = document.getElementById('submitButton');
+
+            if (yInputs.some(input => parseFloat(input.value) == 0)) {
+                submitButton.disabled = true;
+            } else {
+                submitButton.disabled = false;
+            }
+        }
+
+        const toggleInputs = document.getElementById('toggleInputs');
+        const inputGroup = document.getElementById('secondLinePoints');
+
+        toggleInputs.addEventListener('change', function() {
+            inputGroup.style.display = this.checked ? 'block' : 'none';
+        });
+
         document.getElementById('plotForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -169,6 +249,13 @@ def index():
             const secondLinePoints = collectPoints('second-line');
             const serverURL = window.location.origin;
             const serverURLLink = document.getElementById("serverURL");
+
+            const tableArea = document.getElementById('tableArea');
+            tableArea.style.display = 'block';
+
+            const chartArea = document.getElementById('chartArea');
+            chartArea.style.display = 'block'; 
+
             
             serverURLLink.textContent = serverURL;
             serverURLLink.href = serverURL;
@@ -190,8 +277,36 @@ def index():
                 document.getElementById('generatedPlot').src = data.image_path;
                 document.getElementById('generatedPlot').style.display = 'block';
                 document.getElementById("serverURL").textContent = window.location.origin + "/" + data.image_path;
+
+                // Populate the server URL
+
+                  const tableBody = document.querySelector('#pointsTable tbody');
+
+                // Clear the table body
+                tableBody.innerHTML = '';
+
+                // Add the points to the table
+                data.first_line_points.forEach(point => {
+                    const row = document.createElement('tr');
+                    const xCell = document.createElement('td');
+                    const yCell = document.createElement('td');
+
+                    xCell.textContent = point[0];
+                    yCell.textContent = point[1];
+
+                    row.appendChild(xCell);
+                    row.appendChild(yCell);
+
+                    tableBody.appendChild(row);
+                });
             });
         });
+
+        document.querySelectorAll('.first-line.y').forEach(input => {
+             input.addEventListener('input', checkInputs);
+        });
+
+        checkInputs();
 
     </script>
     </body>
@@ -204,13 +319,22 @@ def generate_plot():
     data = request.json
     first_line_points = data.get('first_line_points', [])
     second_line_points = data.get('second_line_points', [])
+    print(first_line_points,file=sys.stderr)
+    
+    q0_q20 = calculated_samples(first_line_points)
+    
+    first_line_points.extend(q0_q20)  # Append the return value to first_line_points
+    print(first_line_points,file=sys.stderr)
 
     unique_filename = str(uuid.uuid4()) + ".png"
     save_path = os.path.join("static", unique_filename)
 
     main(save_path, first_line_points, second_line_points)
 
-    return jsonify({"image_path": save_path})
+    return jsonify({"image_path": save_path, 
+                     "first_line_points": first_line_points,
+                     "second_line_points": second_line_points 
+                 })
 
 
 if __name__ == '__main__':
