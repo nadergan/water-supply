@@ -121,7 +121,7 @@ def index():
                 font-weight: bold;
             }
             input[type="text"] {
-                width: 10%;
+                width: 7%;
                 padding: 8px;
                 margin: 8px 0;
                 box-sizing: border-box;
@@ -140,6 +140,7 @@ def index():
             input[type="submit"]:hover {
                 background-color: #45a049;
             }
+
 
             #pointsTable {
                 width: 10%;
@@ -168,35 +169,52 @@ def index():
     </head>
     <body>
     <form id="plotForm">
+        
         <h1>Water Supply Analysis</h1>
 
         <h2>First Line Points:</h2>
-        <b>Point 1:</b> X: <input type="text" class="first-line x" value="0"> Y: <input type="text" class="first-line y" value="0"><br>
-        <b>Point 2:</b> X: <input type="text" class="first-line x" value="0"> Y: <input type="text" class="first-line y" value="0"><br>
+        <b>Measurement 1:</b> Flow (GPM): <input type="text" class="first-line x" value="0"> Pressure (PSI): <input type="text" class="first-line y" value="0"><br>
+        <b>Measurement 2:</b> Flow (GPM): <input type="text" class="first-line x" value="0"> Pressure (PSI): <input type="text" class="first-line y" value="0"><br>
 
         <br>
+        
+        <label>
+            <input type="checkbox" id="toggleInputs"> Add Second Line Points!
+        </label>
+        <br>
+        <br>
+        <div id="secondLinePoints" style="display: none;">
+            <h2>Second Line Points:</h2>
+            <b>Point 1:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
+            <b>Point 2:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
+            <br><br>
+        </div>
 
-        <h2>Second Line Points:</h2>
-        <b>Point 1:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
-        <b>Point 2:</b> X: <input type="text" class="second-line x" value="0"> Y: <input type="text" class="second-line y" value="0"><br>
-        <br><br>
-        <input type="submit" value="Show Chart">
+        <input type="submit" id="submitButton" value="Show Chart">
+
     </form>
 
-    <table id="pointsTable">
-        <thead>
-            <tr>
-                <th>Flow (gpm)</th>
-                <th>Pressure (psi)</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <div id="tableArea" style="display: none;">
+        <br> 
+        <h2> Data Points Table:</h2>
+        <table id="pointsTable">
+            <thead>
+                <tr>
+                    <th>Flow (gpm)</th>
+                    <th>Pressure (psi)</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 
-    <h2>Generated Chart:</h2>
-    <p>Chart URL: <a id="serverURL" href=""></a></p>
-    <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none; width:800px; height:600px;">
+    <div id="chartArea" style="display: none;">
+        <br>
+        <h2>Generated Graph:</h2>
+        <p>Chart URL: <a id="serverURL" href=""></a></p>
+        <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none; width:800px; height:600px;">
+    </div>
 
     <script>
         function collectPoints(className) {
@@ -206,6 +224,24 @@ def index():
             return xs.map((x, i) => [x, ys[i]]);
         }
 
+        function checkInputs() {
+            const yInputs = Array.from(document.querySelectorAll('.first-line.y'));
+            const submitButton = document.getElementById('submitButton');
+
+            if (yInputs.some(input => parseFloat(input.value) == 0)) {
+                submitButton.disabled = true;
+            } else {
+                submitButton.disabled = false;
+            }
+        }
+
+        const toggleInputs = document.getElementById('toggleInputs');
+        const inputGroup = document.getElementById('secondLinePoints');
+
+        toggleInputs.addEventListener('change', function() {
+            inputGroup.style.display = this.checked ? 'block' : 'none';
+        });
+
         document.getElementById('plotForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -213,6 +249,13 @@ def index():
             const secondLinePoints = collectPoints('second-line');
             const serverURL = window.location.origin;
             const serverURLLink = document.getElementById("serverURL");
+
+            const tableArea = document.getElementById('tableArea');
+            tableArea.style.display = 'block';
+
+            const chartArea = document.getElementById('chartArea');
+            chartArea.style.display = 'block'; 
+
             
             serverURLLink.textContent = serverURL;
             serverURLLink.href = serverURL;
@@ -258,6 +301,12 @@ def index():
                 });
             });
         });
+
+        document.querySelectorAll('.first-line.y').forEach(input => {
+             input.addEventListener('input', checkInputs);
+        });
+
+        checkInputs();
 
     </script>
     </body>
