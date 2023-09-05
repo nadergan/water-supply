@@ -13,11 +13,17 @@ COPY requirements.txt .
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
 
-# Copy the main.py contents into the container at /app
-COPY main.py /app/
+# Copy main.py into the container at /app
+COPY main.py .
 
-# Make port 5000 available to the world outside this container
-EXPOSE 5000
+# Copy the templates directory into the container at /app/templates
+COPY templates templates
+
+# Copy the static directory into the container at /app/static
+COPY static static
+
+# Make port 3000 available to the world outside this container
+EXPOSE 3000
 
 # Run your application
 CMD ["python", "main.py"]
