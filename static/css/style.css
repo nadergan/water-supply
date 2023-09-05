@@ -1,0 +1,58 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+h1, h2 {
+    color: #333366;
+}
+p {
+    font-size: 18px;
+}
+label {
+    font-weight: bold;
+}
+input[type="text"] {
+    width: 7%;
+    padding: 8px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    font-weight: bold;
+    font-size: 20px;
+}
+input[type="submit"] {
+    background-color: #6f84d3;
+    color: white;
+    padding: 20px 40px;
+    margin: 8px 0;
+    font-size: 30px;   
+    border: none;
+    cursor: pointer;
+}
+input[type="submit"]:hover {
+    background-color: #6f84d3;
+}
+
+
+#pointsTable {
+    width: 10%;
+    border-collapse: collapse;
+}
+#pointsTable th, #pointsTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+#pointsTable tr:nth-child(even){background-color: #f2f2f2;}
+#pointsTable tr:hover {background-color: #ddd;}
+#pointsTable th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #6f84d3;
+    color: white;
+}
+
+#pointsTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    font-size: 20px;  /* Increase the font size */
+}
