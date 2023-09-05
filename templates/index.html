@@ -1,56 +1,69 @@
+<!DOCTYPE html>
 <html>
-    <head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water Supply Analysis</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<form id="plotForm">
-    
-    <h1>Water Supply Analysis</h1>
+    <form id="plotForm">
+        <h1>Water Supply Analysis</h1>
 
-    <h2>First Line Points:</h2>
-    <b>Measurement 1:</b> Flow (GPM): <input type="text" class="first-line x" value="0"> Pressure (PSI): <input type="text" class="first-line y" value="0"><br>
-    <b>Measurement 2:</b> Flow (GPM): <input type="text" class="first-line x" value="0"> Pressure (PSI): <input type="text" class="first-line y" value="0"><br>
+        <h2>First Line Points:</h2>
+        <div class="measurement">
+            <label for="first-flow-1">Measurement 1:</label>
+            Flow (GPM): <input type="text" id="first-flow-1" class="first-line x" value="0">
+            Pressure (PSI): <input type="text" id="first-pressure-1" class="first-line y" value="0">
+        </div>
+        <div class="measurement">
+            <label for="first-flow-2">Measurement 2:</label>
+            Flow (GPM): <input type="text" id="first-flow-2" class="first-line x" value="0">
+            Pressure (PSI): <input type="text" id="first-pressure-2" class="first-line y" value="0">
+        </div>
+        <br> <br>
+        <div id="secondary-measurements">
+            <label>
+                <input type="checkbox" id="toggleInputs"> Add Secondary Measurement
+            </label>
+            <div id="secondLinePoints" style="display: none;">
+                <h2>Secondary Measurement:</h2>
+                <div class="measurement">
+                    <label for="second-flow-1">Measurement 1:</label>
+                    Flow (GPM): <input type="text" id="second-flow-1" class="second-line x" value="0">
+                    Pressure (PSI): <input type="text" id="second-pressure-1" class="second-line y" value="0">
+                </div>
+                
+                <div class="measurement">
+                    <label for="second-flow-2">Measurement 2:</label>
+                    Flow (GPM): <input type="text" id="second-flow-2" class="second-line x" value="0">
+                    Pressure (PSI): <input type="text" id="second-pressure-2" class="second-line y" value="0">
+                </div>
+            </div>
+        </div>
+        <br>
+        <input type="submit" id="submitButton" value="Calculate">
+    </form>
 
-    <br>
-    
-    <label>
-        <input type="checkbox" id="toggleInputs"> Add Secondary Measurement
-    </label>
-    <br>
-    <br>
-    <div id="secondLinePoints" style="display: none;">
-        <h2>Secondary Measurement:</h2>
-        <b>Measurement 1:</b> Flow (gpm): <input type="text" class="second-line x" value="0"> Pressure (psi): <input type="text" class="second-line y" value="0"><br>
-        <b>Measurement 2:</b> Flow (gpm): <input type="text" class="second-line x" value="0"> Pressure (psi): <input type="text" class="second-line y" value="0"><br>
-        <br><br>
+    <div id="tableArea" style="display: none;">
+        <h2>Data Points Table:</h2>
+        <table id="pointsTable">
+            <thead>
+                <tr>
+                    <th>Flow (GPM)</th>
+                    <th>Pressure (PSI)</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
 
-    <input type="submit" id="submitButton" value="Calculate">
-
-</form>
-
-<div id="tableArea" style="display: none;">
-    <br> 
-    <h2> Data Points Table:</h2>
-    <table id="pointsTable">
-        <thead>
-            <tr>
-                <th>Flow (gpm)</th>
-                <th>Pressure (psi)</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-</div>
-
-<div id="chartArea" style="display: none;">
-    <br>
-    <h2>Generated Graph:</h2>
-    <p>Chart URL: <a id="serverURL" href=""></a></p>
-    <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none; width:800px; height:600px;">
-</div>
-<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <div id="chartArea" style="display: none;">
+        <h2>Generated Graph:</h2>
+        <p>Chart URL: <a id="serverURL" href=""></a></p>
+        <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none; width:800px; height:600px;">
+    </div>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>
