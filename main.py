@@ -43,7 +43,7 @@ class HydraulicN185Transform(mtransforms.Transform):
 scale.register_scale(HydraulicN185Scale)
 
 # Draw the Chart lines
-def plot_line(points, line_style='-', color='black'):
+def plot_line(points, line_style='-', color='blue'):
     x, y = zip(*points)
     plt.plot(x[:2], y[:2], line_style, color=color)  # Plot the line between the first two points
     if len(points) >= 3:
@@ -65,14 +65,13 @@ def calculated_samples(points):
     Q20 = int( k * ( ( y1 - 20 ) ** (1.0 / 1.85) ) )
     return [ [Q20, 20], [Q0, 0] ]
 
-
 ## 
 def main(save_path, first_line_points, second_line_points):
     plt.rc('lines', linewidth=2, color='red')
     plt.rc('grid', linestyle="-", color='black')
 
-    fig, ax = plt.subplots()
-
+    # fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 6))
     plot_line(first_line_points, '-', 'blue')
     plot_line(second_line_points, '-', 'red')
 
@@ -80,8 +79,12 @@ def main(save_path, first_line_points, second_line_points):
     last_point_x = int(first_line_points[-1][0])
     first_point_y = int(first_line_points[0][1])
 
-    ax.set_xlim([0, int(last_point_x * 1.05 )])
-    ax.set_ylim([0, int(first_point_y * 1.3 )])
+    # Set the X-Axis and Y-Axis Limit values
+    third_point_x = int(first_line_points[2][0])
+    first_point_y = int(first_line_points[0][1])
+    ax.set_xlim([0, int(third_point_x * 1.05)])  # Set the x-range to end at 110% of the 3rd point's x-value
+    ax.set_ylim([0, int(first_point_y * 1.2)])
+
 
     ## 
     gca = plt.gca()

@@ -42,7 +42,7 @@
             </div>
         </div>
         <br>
-        <input type="submit" id="submitButton" value="Calculate">
+        <input type="submit" id="submitButton" value="Calculate" disabled="false">
     </form>
 
     <div id="tableArea" style="display: none;">
@@ -62,7 +62,7 @@
     <div id="chartArea" style="display: none;">
         <h2>Generated Graph:</h2>
         <p>Chart URL: <a id="serverURL" href=""></a></p>
-        <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none; width:800px; height:600px;">
+        <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none;  max-width:100%; max-height:100%; width:auto; height:auto;">
     </div>
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
