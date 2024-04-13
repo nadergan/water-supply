@@ -42,15 +42,16 @@ class HydraulicN185Transform(mtransforms.Transform):
 
 scale.register_scale(HydraulicN185Scale)
 
-
 # Draw the Chart lines
-def plot_line(points, line_style='-', color='blue'):
+def plot_line(points, line_style='-', color='black'):
     x, y = zip(*points)
-    plt.plot(x, y, line_style, color=color)
-    for txt in points:
+    plt.plot(x[:2], y[:2], line_style, color=color)  # Plot the line between the first two points
+    if len(points) >= 3:
+        plt.plot(x[1:3], y[1:3], '--', color=color)  # Plot the line between the second and third points
+    for txt in points[:3]:  # Label the first three points
         if (txt[0] != 0) or (txt[1] != 0):
             plt.text(txt[0], txt[1], f'({txt[0]}, {txt[1]})', ha='left', va="center")
-    plt.scatter(x, y, color=color)
+    plt.scatter(x[:3], y[:3], color=color)  # Scatter the first three points
 
 
 ## Calculate the Q0 and Q20
