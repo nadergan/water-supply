@@ -8,9 +8,8 @@ env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }} 
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKER_REPO: naderganayem/water
-  SERVER_HOST: 3.71.174.151
+  SERVER_HOST: "water.ganayem.com"
   SERVER_USERNAME: ubuntu
-  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 
 jobs:
@@ -39,7 +38,7 @@ jobs:
       with:
         host: $SERVER_HOST
         username: $SERVER_USERNAME
-        key: $SSH_PRIVATE_KEY
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           docker pull $DOCKER_REPO:latest
           docker stop water || true
