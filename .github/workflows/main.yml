@@ -1,0 +1,48 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }} 
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKER_REPO: naderganayem/water
+  SERVER_HOST: 3.71.174.151
+  SERVER_USERNAME: ubuntu
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build Docker image
+      run: |
+        docker build -t $DOCKER_REPO:latest .
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: $DOCKER_USERNAME
+        password: $DOCKER_PASSWORD
+
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker push $DOCKER_REPO:latest
+
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: $SERVER_HOST
+        username: $SERVER_USERNAME
+        key: $SSH_PRIVATE_KEY
+        script: |
+          docker pull $DOCKER_REPO:latest
+          docker stop water || true
+          docker rm water || true
+          docker run --name water -d -it -p 3000:3000 -v $PWD/static:/app/static water
