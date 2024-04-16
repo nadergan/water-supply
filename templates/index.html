@@ -1,69 +1,224 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water Supply Analysis</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Water Pressure Measurements</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        fieldset {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        legend {
+            font-weight: bold;
+        }
+
+        .measurement {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .measurement div {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .measurement div:last-child {
+            margin-right: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        @media screen and (max-width: 600px) {
+            .measurement {
+                flex-direction: column;
+            }
+
+            .measurement div {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+
+        #chartContainer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #chartImage {
+            max-width: 100%;
+            height: auto;
+        }
+
+        #dataTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #dataTable th, #dataTable td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #dataTable th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            $('#measurementForm').submit(function(event) {
+                event.preventDefault();
+
+                var flow1 = $('#flow1').val();
+                var pressure1 = $('#pressure1').val();
+                var flow2 = $('#flow2').val();
+                var pressure2 = $('#pressure2').val();
+
+                var data = {
+                    'measurement1': {
+                        'flow': flow1,
+                        'pressure': pressure1
+                    },
+                    'measurement2': {
+                        'flow': flow2,
+                        'pressure': pressure2
+                    }
+                };
+
+                $.ajax({
+                    url: '/generate_plot',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        console.log('Data sent successfully');
+                        // Display the chart image
+                        var imagePath = response.image_path;
+                        $('#chartImage').attr('src', imagePath);
+                        $('#chartContainer').show();
+
+                        // Display the data points in the table
+                        var firstLinePoints = response.first_line_points;
+                        var secondLinePoints = response.second_line_points;
+                        var tableBody = $('#dataTableBody');
+                        tableBody.empty(); // Clear existing table rows
+
+                        // Append first line points to the table
+                        firstLinePoints.forEach(function(point) {
+                            var row = '<tr><td>' + point[0] + '</td><td>' + point[1] + '</td></tr>';
+                            tableBody.append(row);
+                        });
+
+                        // Append second line points to the table
+                        secondLinePoints.forEach(function(point) {
+                            var row = '<tr><td>' + point[0] + '</td><td>' + point[1] + '</td></tr>';
+                            tableBody.append(row);
+                        });
+
+                        $('#dataTableContainer').show();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error sending data:', error);
+                    }
+                });
+            });
+        });
+    </script>
 </head>
 <body>
-    <form id="plotForm">
-        <h1>Water Supply Analysis</h1>
-
-        <h2>First Line Points:</h2>
-        <div class="measurement">
-            <label for="first-flow-1">Measurement 1:</label>
-            Flow (GPM): <input type="text" id="first-flow-1" class="first-line x" value="0">
-            Pressure (PSI): <input type="text" id="first-pressure-1" class="first-line y" value="0">
-        </div>
-        <div class="measurement">
-            <label for="first-flow-2">Measurement 2:</label>
-            Flow (GPM): <input type="text" id="first-flow-2" class="first-line x" value="0">
-            Pressure (PSI): <input type="text" id="first-pressure-2" class="first-line y" value="0">
-        </div>
-        <br> <br>
-        <div id="secondary-measurements">
-            <label>
-                <input type="checkbox" id="toggleInputs"> Add Secondary Measurement
-            </label>
-            <div id="secondLinePoints" style="display: none;">
-                <h2>Secondary Measurement:</h2>
-                <div class="measurement">
-                    <label for="second-flow-1">Measurement 1:</label>
-                    Flow (GPM): <input type="text" id="second-flow-1" class="second-line x" value="0">
-                    Pressure (PSI): <input type="text" id="second-pressure-1" class="second-line y" value="0">
+    <h1>Water Pressure Measurements</h1>
+    <form id="measurementForm">
+        <fieldset>
+            <legend>Measurement 1</legend>
+            <div class="measurement">
+                <div>
+                    <label for="flow1">Water Flow:</label>
+                    <input type="number" id="flow1" name="flow1" value="0" required>
                 </div>
-                
-                <div class="measurement">
-                    <label for="second-flow-2">Measurement 2:</label>
-                    Flow (GPM): <input type="text" id="second-flow-2" class="second-line x" value="0">
-                    Pressure (PSI): <input type="text" id="second-pressure-2" class="second-line y" value="0">
+                <div>
+                    <label for="pressure1">Water Pressure:</label>
+                    <input type="number" id="pressure1" name="pressure1" required>
                 </div>
             </div>
-        </div>
-        <br>
-        <input type="submit" id="submitButton" value="Calculate" disabled="false">
+        </fieldset>
+        <fieldset>
+            <legend>Measurement 2</legend>
+            <div class="measurement">
+                <div>
+                    <label for="flow2">Water Flow:</label>
+                    <input type="number" id="flow2" name="flow2" required>
+                </div>
+                <div>
+                    <label for="pressure2">Water Pressure:</label>
+                    <input type="number" id="pressure2" name="pressure2" required>
+                </div>
+            </div>
+        </fieldset>
+        <button type="submit">Submit</button>
     </form>
 
-    <div id="tableArea" style="display: none;">
-        <h2>Data Points Table:</h2>
-        <table id="pointsTable">
-            <thead>
-                <tr>
-                    <th>Flow (GPM)</th>
-                    <th>Pressure (PSI)</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+    <div id="chartContainer" style="display: none;">
+        <h2>Generated Chart</h2>
+        <img id="chartImage" src="" alt="Chart">
     </div>
 
-    <div id="chartArea" style="display: none;">
-        <h2>Generated Graph:</h2>
-        <p>Chart URL: <a id="serverURL" href=""></a></p>
-        <img id="generatedPlot" src="" alt="Generated chart will appear here." style="display:none;  max-width:100%; max-height:100%; width:auto; height:auto;">
+    <div id="dataTableContainer" style="display: none;">
+        <h2>Data Points</h2>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Flow (gpm)</th>
+                    <th>Pressure (psi)</th>
+                </tr>
+            </thead>
+            <tbody id="dataTableBody"></tbody>
+        </table>
     </div>
-    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>
