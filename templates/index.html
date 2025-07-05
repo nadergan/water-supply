@@ -45,17 +45,39 @@
             margin-right: 0;
         }
 
+        .optional-point {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .optional-point div {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .optional-point div:last-child {
+            margin-right: 0;
+        }
+
         label {
             display: block;
             margin-bottom: 5px;
         }
 
-        input[type="number"] {
+        input[type="number"], input[type="text"] {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            direction: auto; /* Auto-detect text direction for Hebrew */
+        }
+        
+        /* Specific styling for Hebrew labels */
+        .hebrew-input {
+            text-align: right;
+            direction: rtl;
         }
 
         button {
@@ -72,12 +94,22 @@
             background-color: #45a049;
         }
 
+        .optional-section {
+            border: 2px dashed #ccc;
+            background-color: #f9f9f9;
+        }
+
+        .optional-section legend {
+            color: #666;
+            font-style: italic;
+        }
+
         @media screen and (max-width: 600px) {
-            .measurement {
+            .measurement, .optional-point {
                 flex-direction: column;
             }
 
-            .measurement div {
+            .measurement div, .optional-point div {
                 margin-right: 0;
                 margin-bottom: 10px;
             }
@@ -109,6 +141,14 @@
             background-color: #f2f2f2;
             font-weight: bold;
         }
+
+        .green-row {
+            background-color: #e8f5e8;
+        }
+
+        .purple-row {
+            background-color: #f0e8f5;
+        }
     </style>
     <script>
         $(document).ready(function() {
@@ -131,6 +171,31 @@
                     }
                 };
 
+                // Add optional points if they have values
+                var optionalLabel1 = $('#optional_label1').val();
+                var optionalFlow1 = $('#optional_flow1').val();
+                var optionalPressure1 = $('#optional_pressure1').val();
+
+                if (optionalFlow1 && optionalPressure1) {
+                    data['optional_point1'] = {
+                        'label': optionalLabel1 || 'Point 1',
+                        'flow': optionalFlow1,
+                        'pressure': optionalPressure1
+                    };
+                }
+
+                var optionalLabel2 = $('#optional_label2').val();
+                var optionalFlow2 = $('#optional_flow2').val();
+                var optionalPressure2 = $('#optional_pressure2').val();
+
+                if (optionalFlow2 && optionalPressure2) {
+                    data['optional_point2'] = {
+                        'label': optionalLabel2 || 'Point 2',
+                        'flow': optionalFlow2,
+                        'pressure': optionalPressure2
+                    };
+                }
+
                 $.ajax({
                     url: '/generate_plot',
                     type: 'POST',
@@ -146,18 +211,26 @@
                         // Display the data points in the table
                         var firstLinePoints = response.first_line_points;
                         var secondLinePoints = response.second_line_points;
+                        var optionalPoints = response.optional_points || [];
                         var tableBody = $('#dataTableBody');
                         tableBody.empty(); // Clear existing table rows
 
                         // Append first line points to the table
                         firstLinePoints.forEach(function(point) {
-                            var row = '<tr><td>' + point[0] + '</td><td>' + point[1] + '</td></tr>';
+                            var row = '<tr><td>' + point[0] + '</td><td>' + point[1] + '</td><td>Main Line</td></tr>';
                             tableBody.append(row);
                         });
 
                         // Append second line points to the table
                         secondLinePoints.forEach(function(point) {
-                            var row = '<tr><td>' + point[0] + '</td><td>' + point[1] + '</td></tr>';
+                            var row = '<tr><td>' + point[0] + '</td><td>' + point[1] + '</td><td>Secondary Line</td></tr>';
+                            tableBody.append(row);
+                        });
+
+                        // Append optional points to the table
+                        optionalPoints.forEach(function(point, index) {
+                            var className = index === 0 ? 'green-row' : 'purple-row';
+                            var row = '<tr class="' + className + '"><td>' + point.flow + '</td><td>' + point.pressure + '</td><td>' + point.label + '</td></tr>';
                             tableBody.append(row);
                         });
 
@@ -175,32 +248,70 @@
     <h1>Water Pressure Measurements</h1>
     <form id="measurementForm">
         <fieldset>
-            <legend>Measurement 1</legend>
+            <legend>Measurement 1 (Required)</legend>
             <div class="measurement">
                 <div>
-                    <label for="flow1">Water Flow:</label>
+                    <label for="flow1">Water Flow (gpm):</label>
                     <input type="number" id="flow1" name="flow1" value="0" required>
                 </div>
                 <div>
-                    <label for="pressure1">Water Pressure:</label>
+                    <label for="pressure1">Water Pressure (psi):</label>
                     <input type="number" id="pressure1" name="pressure1" required>
                 </div>
             </div>
         </fieldset>
+        
         <fieldset>
-            <legend>Measurement 2</legend>
+            <legend>Measurement 2 (Required)</legend>
             <div class="measurement">
                 <div>
-                    <label for="flow2">Water Flow:</label>
+                    <label for="flow2">Water Flow (gpm):</label>
                     <input type="number" id="flow2" name="flow2" required>
                 </div>
                 <div>
-                    <label for="pressure2">Water Pressure:</label>
+                    <label for="pressure2">Water Pressure (psi):</label>
                     <input type="number" id="pressure2" name="pressure2" required>
                 </div>
             </div>
         </fieldset>
-        <button type="submit">Submit</button>
+
+        <fieldset class="optional-section">
+            <legend>Optional Data Point 1</legend>
+            <div class="optional-point">
+                <div>
+                    <label for="optional_label1">Label:</label>
+                    <input type="text" id="optional_label1" name="optional_label1" placeholder="e.g., חניון, Hydrant A" class="hebrew-input">
+                </div>
+                <div>
+                    <label for="optional_flow1">Water Flow (gpm):</label>
+                    <input type="number" id="optional_flow1" name="optional_flow1" step="0.01">
+                </div>
+                <div>
+                    <label for="optional_pressure1">Water Pressure (psi):</label>
+                    <input type="number" id="optional_pressure1" name="optional_pressure1" step="0.01">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="optional-section">
+            <legend>Optional Data Point 2</legend>
+            <div class="optional-point">
+                <div>
+                    <label for="optional_label2">Label:</label>
+                    <input type="text" id="optional_label2" name="optional_label2" placeholder="e.g., בית כיבוי, Hydrant B" class="hebrew-input">
+                </div>
+                <div>
+                    <label for="optional_flow2">Water Flow (gpm):</label>
+                    <input type="number" id="optional_flow2" name="optional_flow2" step="0.01">
+                </div>
+                <div>
+                    <label for="optional_pressure2">Water Pressure (psi):</label>
+                    <input type="number" id="optional_pressure2" name="optional_pressure2" step="0.01">
+                </div>
+            </div>
+        </fieldset>
+
+        <button type="submit">Generate Chart</button>
     </form>
 
     <div id="chartContainer" style="display: none;">
@@ -215,6 +326,7 @@
                 <tr>
                     <th>Flow (gpm)</th>
                     <th>Pressure (psi)</th>
+                    <th>Type/Label</th>
                 </tr>
             </thead>
             <tbody id="dataTableBody"></tbody>
