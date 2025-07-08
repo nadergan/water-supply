@@ -121,14 +121,30 @@
         }
 
         #chartImage {
-            max-width: 100%;
+            max-width: 600px;  /* Match form max-width */
+            width: 100%;
             height: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         #dataTable {
             width: 100%;
+            max-width: 600px;  /* Match form and chart max-width */
+            margin: 0 auto;    /* Center the table */
             border-collapse: collapse;
             margin-top: 20px;
+        }
+
+        #dataTableContainer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #dataTableContainer h2 {
+            margin-bottom: 15px;
+            color: #333;
         }
 
         #dataTable th, #dataTable td {

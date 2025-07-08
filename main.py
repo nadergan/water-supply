@@ -44,7 +44,7 @@ except Exception as e:
 def fix_hebrew_text(text):
     """
     Fix Hebrew text direction for matplotlib display.
-    This function handles the bidirectional text issue.
+    Simple and reliable approach.
     """
     if not text or not isinstance(text, str):
         return text
@@ -55,45 +55,12 @@ def fix_hebrew_text(text):
         return text  # No Hebrew, return as is
     
     try:
-        # Try using python-bidi if available
+        # Try using python-bidi if available (best solution)
         from bidi.algorithm import get_display
         return get_display(text)
     except ImportError:
-        # Fallback method: simple character reversal for Hebrew parts
-        logging.info("python-bidi not available, using fallback Hebrew text processing")
-        
-        # Split text into lines
-        lines = text.split('\n')
-        fixed_lines = []
-        
-        for line in lines:
-            if hebrew_pattern.search(line):
-                # Simple approach: reverse the entire line if it contains Hebrew
-                # This works for pure Hebrew text
-                words = line.split()
-                hebrew_words = []
-                latin_words = []
-                
-                for word in words:
-                    if hebrew_pattern.search(word):
-                        # Reverse Hebrew words
-                        hebrew_words.append(word[::-1])
-                    else:
-                        latin_words.append(word)
-                
-                # Combine: Hebrew words first (reversed), then Latin words
-                if hebrew_words and latin_words:
-                    fixed_line = ' '.join(hebrew_words) + ' ' + ' '.join(latin_words)
-                elif hebrew_words:
-                    fixed_line = ' '.join(reversed(hebrew_words))
-                else:
-                    fixed_line = ' '.join(latin_words)
-            else:
-                fixed_line = line
-            
-            fixed_lines.append(fixed_line)
-        
-        return '\n'.join(fixed_lines)
+        # Fallback: simple character reversal for pure Hebrew text
+        return text[::-1] if hebrew_pattern.search(text) else text
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -203,7 +170,8 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     plt.rc('lines', linewidth=2, color='red')
     plt.rc('grid', linestyle="-", color='black')
     
-    fig, ax = plt.subplots(figsize=(10, 6))
+    # Set figure size to match form width (600px max-width ≈ 8 inches at 75 DPI)
+    fig, ax = plt.subplots(figsize=(8, 5))
     
     plot_line(first_line_points, '-', 'blue')
     
@@ -238,8 +206,9 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     max_x = max(all_x_values) if all_x_values else last_point_x
     max_y = max(all_y_values) if all_y_values else first_point_y
     
-    plt.xlim(0, max_x * 1.1)  
-    plt.ylim(0, max_y * 1.2)  
+    # Set X-axis to end at exactly 10% beyond the last value
+    plt.xlim(0, max_x * 0.90)   # 10% margin (current setting)
+    plt.ylim(0, max_y * 1.15)   # 20% margin for Y-axis  
 
     plt.gca().set_xscale('hydraulic-n-1.85')
     plt.gca().xaxis.set_major_locator(MultipleLocator(230))
@@ -332,4 +301,3 @@ def generate_plot():
 if __name__ == '__main__':
     scale.register_scale(HydraulicN185Scale)
     app.run(debug=True, host="0.0.0.0", port=3000)
-    
