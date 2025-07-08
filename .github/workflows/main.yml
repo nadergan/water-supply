@@ -1,46 +1,120 @@
-name: Build and Deploy
+name: Build and Deploy Water Analysis App
 
 on:
   push:
-    branches: [master]
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
 
 env:
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }} 
-  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKER_REPO: naderganayem/water
-  SERVER_HOST: "water.ganayem.com"
-  SERVER_USERNAME: ubuntu
-
+  DOCKER_IMAGE: naderganayem/water
+  CONTAINER_NAME: water-app
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Build Docker image
-      run: |
-        docker build -t $DOCKER_REPO:latest .
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-    - name: Login to Docker Hub
-      run: |
-        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-     
-
-    - name: Push Docker image to Docker Hub
-      run: |
-        docker push $DOCKER_REPO:latest
-
-    - name: Deploy to server via SSH
-      uses: appleboy/ssh-action@master
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
       with:
-        host: $SERVER_HOST
-        username: $SERVER_USERNAME
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Extract version from tag
+      id: get_version
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        else
+          VERSION=${GITHUB_SHA::8}
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Building version: $VERSION"
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.DOCKER_IMAGE }}:latest
+          ${{ env.DOCKER_IMAGE }}:${{ steps.get_version.outputs.VERSION }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Deploy to production server
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.PROD_HOST || 'water.ganayem.com' }}
+        username: ${{ secrets.PROD_USER || 'ubuntu'}}
+        key: ${{ secrets.PROD_SSH_KEY }}
+        port: ${{ secrets.PROD_PORT || 22 }}
         script: |
-          docker pull $DOCKER_REPO:latest
-          docker stop water || true
-          docker rm water || true
-          docker run --name water -d -it -p 3000:3000 -v $PWD/static:/app/static water
+          echo "🚀 Starting deployment to water.ganayem.com..."
+          
+          # Navigate to project directory
+          cd water-app || { echo "❌ Directory 'water-app' not found"; exit 1; }
+          
+          # Stop current containers
+          echo "📦 Stopping containers..."
+          docker-compose down
+          
+          # Pull latest images
+          echo "⬇️ Pulling latest images..."
+          docker-compose pull
+          
+          # Start containers
+          echo "🔄 Starting containers..."
+          docker-compose up -d
+          
+          # Wait for containers to be ready
+          echo "⏳ Waiting for containers to start..."
+          sleep 15
+          
+          # Health check
+          echo "🔍 Checking container health..."
+          docker-compose ps
+          
+          # Test if app is responding via HTTPS
+          echo "🌐 Testing HTTPS endpoint..."
+          if curl -f -k https://water.ganayem.com/ > /dev/null 2>&1; then
+            echo "✅ Deployment successful! water.ganayem.com is responding."
+          elif curl -f http://localhost:3000/ > /dev/null 2>&1; then
+            echo "✅ App container is responding on port 3000."
+            echo "⚠️ Note: HTTPS might need a moment to be ready."
+          else
+            echo "⚠️ Warning: App might not be fully ready yet."
+            echo "📋 Container logs:"
+            docker-compose logs --tail=20 water-app
+          fi
+          
+          echo "🎉 Deployment completed!"
+
+  notify:
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify deployment status
+      run: |
+        if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+          echo "✅ Deployment to water.ganayem.com successful!"
+        else
+          echo "❌ Deployment failed!"
+          exit 1
+        fi
