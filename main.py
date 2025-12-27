@@ -170,8 +170,8 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     plt.rc('lines', linewidth=2, color='red')
     plt.rc('grid', linestyle="-", color='black')
     
-    # Set figure size to match form width (600px max-width ≈ 8 inches at 75 DPI)
-    fig, ax = plt.subplots(figsize=(8, 5))
+    # Set figure size for 640px width while maintaining aspect ratio (640x400px at 100 DPI)
+    fig, ax = plt.subplots(figsize=(6.4, 4))
     
     plot_line(first_line_points, '-', 'blue')
     
@@ -227,8 +227,8 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
 
     plt.tight_layout()
     
-    # Save with higher DPI for better text rendering
-    plt.savefig(save_path, dpi=200, bbox_inches='tight', 
+    # Save with 100 DPI for 640x400px output
+    plt.savefig(save_path, dpi=100, bbox_inches='tight', 
                 facecolor='white', edgecolor='none')
     plt.close(fig)
 
