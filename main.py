@@ -139,37 +139,25 @@ class HydraulicN185Transform(mtransforms.Transform):
 
 scale.register_scale(HydraulicN185Scale)
 
-def plot_line(points, line_style='-', color='blue', label=None):
+def plot_line(points, line_style='-', color='blue'):
     """
     Plot a line connecting the provided points and label the first three points.
 
     :param points: List of (x, y) points
     :param line_style: Line style for the plot
     :param color: Color of the line and points
-    :param label: Legend label for the line
     """
     x, y = zip(*points)
-    
-    # Plot main line with improved styling
-    plt.plot(x[:2], y[:2], line_style, color=color, linewidth=3, 
-             label=label, marker='o', markersize=8, markerfacecolor='white', 
-             markeredgecolor=color, markeredgewidth=2)
-    
-    # Plot dashed extension line
+    plt.plot(x[:2], y[:2], line_style, color=color)  # Plot the line between the first two points
     if len(points) >= 3:
-        plt.plot(x[1:3], y[1:3], '--', color=color, linewidth=2, alpha=0.8)
-    
-    # Add point labels with better styling
-    for i, txt in enumerate(points[:3]):
+        plt.plot(x[1:3], y[1:3], '--', color=color)  # Plot the line between the second and third points
+    for txt in points[:3]:  # Label the first three points
         if (txt[0] != 0) or (txt[1] != 0):
             plt.text(txt[0], txt[1], f'({int(txt[0])}, {int(txt[1])})', 
-                    ha='left', va='bottom', fontsize=9, 
-                    bbox=dict(boxstyle="round,pad=0.3", facecolor='white', 
-                             edgecolor=color, alpha=0.8))
-    
-    # Plot points with enhanced styling
-    plt.scatter(x[:3], y[:3], color=color, s=80, zorder=5, 
-               edgecolors='white', linewidth=2)
+                    ha='left', va="center", fontsize=10, fontfamily='monospace', 
+                    fontweight='bold', bbox=dict(boxstyle="round,pad=0.3", 
+                    facecolor='white', edgecolor='gray', alpha=0.8))
+    plt.scatter(x[:3], y[:3], color=color)  # Scatter the first three points
 
 def plot_optional_point(point, label, color='green'):
     """
@@ -200,11 +188,11 @@ def plot_optional_point(point, label, color='green'):
     else:
         display_text = coord_text
     
-    # Add label with enhanced styling
+    # Add label with enhanced styling and Hebrew support
     plt.text(x, y, display_text, ha='center', va='bottom', 
-             bbox=dict(boxstyle="round,pad=0.4", facecolor=color, alpha=0.2,
-                      edgecolor=color, linewidth=1),
-             fontsize=10, fontfamily='sans-serif', fontweight='bold')
+             bbox=dict(boxstyle="round,pad=0.4", facecolor=color, alpha=0.2, 
+                      edgecolor=color, linewidth=1.5),
+             fontsize=11, fontweight='bold', wrap=True)
 
 def calculated_samples(points):
     """
@@ -237,24 +225,24 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     # Modern styling
     plt.style.use('default')  # Clean base style
     
-    # Set figure size for 640px width while maintaining aspect ratio (640x400px at 100 DPI)
-    fig, ax = plt.subplots(figsize=(6.4, 4), facecolor='white')
+    # Set figure size for larger chart display
+    fig, ax = plt.subplots(figsize=(10, 6.5), facecolor='white')
     
     # Set background color
     ax.set_facecolor('#f8f9fa')  # Light gray background
     
-    # Configure grid for better appearance
-    ax.grid(True, linestyle='-', alpha=0.3, color='#cccccc', linewidth=0.8)
+    # Configure grid for better visibility
+    ax.grid(True, linestyle='-', alpha=0.5, color='#999999', linewidth=1)
     ax.set_axisbelow(True)  # Put grid behind data
     
-    plot_line(first_line_points, '-', '#2E86AB')  # Modern blue
+    plot_line(first_line_points, '-', 'blue')
     
     if second_line_points:
-        plot_line(second_line_points, '-', '#A23B72')  # Modern purple-red
+        plot_line(second_line_points, '-', 'red')
 
     # Plot optional points if provided
     if optional_points:
-        colors = ['#F18F01', '#C73E1D']  # Modern orange and red
+        colors = ['green', 'purple']  # Different colors for the two optional points
         for i, point_data in enumerate(optional_points):
             if point_data and 'flow' in point_data and 'pressure' in point_data:
                 flow = float(point_data['flow'])
@@ -286,41 +274,39 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
 
     plt.gca().set_xscale('hydraulic-n-1.85')
     
+    # Force x-axis to show labels
+    ax.xaxis.set_visible(True)
+    ax.yaxis.set_visible(True)
+    
     # Enhanced axis styling
     ax = plt.gca()
-    ax.xaxis.set_major_locator(MultipleLocator(230))
+    ax.xaxis.set_major_locator(MultipleLocator(100))  # More frequent x-axis ticks
+    ax.xaxis.set_minor_locator(MultipleLocator(50))   # Add minor ticks for x-axis
     ax.yaxis.set_major_locator(MultipleLocator(10))
     ax.yaxis.set_minor_locator(MultipleLocator(5))
     
-    # Remove tick marks but keep labels
-    ax.tick_params(axis='both', which='both', length=0, width=0)
-    ax.tick_params(axis='both', which='major', labelsize=10, colors='#333333')
-    
-    # Style the spines (borders)
-    for spine in ax.spines.values():
-        spine.set_color('#cccccc')
-        spine.set_linewidth(1)
-    
-    # Remove top and right spines for cleaner look
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+    # Configure tick marks and labels
+    ax.tick_params(axis='both', which='both', length=0, width=0)  # Remove tick marks
+    ax.tick_params(axis='both', which='major', labelsize=11, colors='#000000')
+    ax.tick_params(axis='x', which='major', labelsize=12, colors='#000000', labelbottom=True)  # Ensure x-axis labels are visible
+    ax.tick_params(axis='y', which='major', labelleft=True)  # Ensure y-axis labels are visible
 
-    # Enhanced labels and title
-    plt.ylabel('Pressure (psi)', fontsize=12, fontweight='bold', color='#333333')
-    plt.xlabel('Flow (gpm)', fontsize=12, fontweight='bold', color='#333333')
-    plt.title('WATER SUPPLY ANALYSIS', fontsize=16, fontweight='bold', 
-              color='#2c3e50', pad=20)
-    
-    # Add legend if there are multiple lines
-    handles, labels = ax.get_legend_handles_labels()
-    if handles:
-        plt.legend(loc='upper right', frameon=True, fancybox=True, shadow=True,
-                  framealpha=0.9, edgecolor='#cccccc')
+    # Style axis numbers with colors
+    plt.tick_params(axis='x', which='major', left=False, bottom=True, right=False, top=False, 
+                   color='#2E86AB', labelcolor='#2E86AB', labelsize=17, pad=8)  # Blue for x-axis
+    plt.tick_params(axis='y', which='major', left=True, bottom=False, right=False, top=False, 
+                   color='#A23B72', labelcolor='#A23B72', labelsize=17, pad=8)  # Purple for y-axis
+    plt.tick_params(axis='both', which='minor', width=1, length=0)
+
+    # Set labels with stylish fonts and colors
+    plt.ylabel('Pressure (psi)', fontsize=12, fontfamily='Times New Roman', fontweight='bold', color='#A23B72')  # Purple to match y-axis numbers
+    plt.xlabel('Flow (gpm)', fontsize=12, fontfamily='Times New Roman', fontweight='bold', color='#2E86AB')  # Blue to match x-axis numbers
+    plt.title('WATER SUPPLY ANALYSIS', fontsize=18, fontfamily='Times New Roman', fontweight='bold', pad=20, color='#e74c3c')  # Bright red for prominence
 
     plt.tight_layout()
     
-    # Save with 100 DPI for 640x400px output (remove bbox_inches to maintain exact size)
-    plt.savefig(save_path, dpi=100, 
+    # Save with higher DPI for better text rendering
+    plt.savefig(save_path, dpi=200, bbox_inches='tight', 
                 facecolor='white', edgecolor='none')
     plt.close(fig)
 

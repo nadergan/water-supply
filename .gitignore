@@ -1,2 +1,5 @@
 # created by virtualenv automatically
 static/charts/*
+
+# VS Code settings
+.vscode/
