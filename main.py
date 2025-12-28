@@ -151,21 +151,38 @@ def plot_line(points, line_style='-', color='blue'):
     plt.plot(x[:2], y[:2], line_style, color=color)  # Plot the line between the first two points
     if len(points) >= 3:
         plt.plot(x[1:3], y[1:3], '--', color=color)  # Plot the line between the second and third points
-    for txt in points[:3]:  # Label the first three points
+    
+    # Label the first three points with smart positioning
+    for i, txt in enumerate(points[:3]):
         if (txt[0] != 0) or (txt[1] != 0):
-            plt.text(txt[0], txt[1], f'({int(txt[0])}, {int(txt[1])})', 
-                    ha='left', va="center", fontsize=10, fontfamily='monospace', 
+            # Determine label position based on point index and y-value
+            # First point (highest pressure) - label above
+            # Second point (middle) - label below  
+            # Third point (lowest pressure) - label above
+            if i == 0:  # First point (highest pressure)
+                va_pos = "bottom"
+                y_offset = 4
+            elif i == 1:  # Second point (middle pressure)
+                va_pos = "top"
+                y_offset = -4
+            else:  # Third point (lowest pressure)
+                va_pos = "bottom"
+                y_offset = 4
+            
+            plt.text(txt[0], txt[1] + y_offset, f'({int(txt[0])}, {int(txt[1])})', 
+                    ha='center', va=va_pos, fontsize=10, fontfamily='monospace', 
                     fontweight='bold', bbox=dict(boxstyle="round,pad=0.3", 
                     facecolor='white', edgecolor='gray', alpha=0.8))
     plt.scatter(x[:3], y[:3], color=color)  # Scatter the first three points
 
-def plot_optional_point(point, label, color='green'):
+def plot_optional_point(point, label, color='green', point_index=0):
     """
     Plot an optional data point with a line from origin and label.
 
     :param point: (x, y) coordinates of the point
     :param label: Label for the point (supports Hebrew)
     :param color: Color of the point and line
+    :param point_index: Index of the point (0 for first, 1 for second) to determine label position
     """
     x, y = point
     
@@ -188,8 +205,20 @@ def plot_optional_point(point, label, color='green'):
     else:
         display_text = coord_text
     
+    # Position label based on point index
+    if point_index == 0:  # First optional point - to the left of the point
+        y_offset = 3  # A few pixels higher
+        x_offset = -25  # Increased offset to avoid line overlap
+        ha_pos = 'right'
+        va_pos = 'center'
+    else:  # Second optional point - below the point
+        y_offset = -4
+        x_offset = 0
+        ha_pos = 'center'
+        va_pos = 'top'
+    
     # Add label with enhanced styling and Hebrew support
-    plt.text(x, y, display_text, ha='center', va='bottom', 
+    plt.text(x + x_offset, y + y_offset, display_text, ha=ha_pos, va=va_pos, 
              bbox=dict(boxstyle="round,pad=0.4", facecolor=color, alpha=0.2, 
                       edgecolor=color, linewidth=1.5),
              fontsize=11, fontweight='bold', wrap=True)
@@ -229,7 +258,7 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     fig, ax = plt.subplots(figsize=(12, 8), facecolor='white')
     
     # Set background color
-    ax.set_facecolor('#f8f9fa')  # Light gray background
+    ax.set_facecolor('white')  # White background
     
     # Configure grid for better visibility
     ax.grid(True, linestyle='-', alpha=0.5, color='#999999', linewidth=1)
@@ -249,7 +278,7 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
                 pressure = float(point_data['pressure'])
                 label = point_data.get('label', f'Point {i+1}')
                 color = colors[i % len(colors)]
-                plot_optional_point((flow, pressure), label, color)
+                plot_optional_point((flow, pressure), label, color, i)
 
     # Set the X-Axis and Y-Axis Limit values
     last_point_x = int(first_line_points[-2][0])
