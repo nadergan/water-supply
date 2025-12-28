@@ -14,37 +14,78 @@ import logging
 import re
 
 # Configure matplotlib for Hebrew support
-plt.rcParams['font.family'] = ['DejaVu Sans', 'Arial Unicode MS', 'Tahoma', 'sans-serif']
 plt.rcParams['axes.unicode_minus'] = False
 
 # Try to find and set a Hebrew-compatible font
-try:
-    # Common Hebrew fonts that might be available
-    hebrew_fonts = ['David', 'Arial Hebrew', 'Noto Sans Hebrew', 'DejaVu Sans', 'Arial Unicode MS', 'Tahoma']
-    available_fonts = [f.name for f in fm.fontManager.ttflist]
-    
-    hebrew_font = None
-    for font in hebrew_fonts:
-        if font in available_fonts:
-            hebrew_font = font
-            break
-    
-    if hebrew_font:
-        plt.rcParams['font.family'] = [hebrew_font]
-        logging.info(f"Using Hebrew font: {hebrew_font}")
-    else:
-        # Fallback to DejaVu Sans which has some Hebrew support
-        plt.rcParams['font.family'] = ['DejaVu Sans']
-        logging.info("Using fallback font: DejaVu Sans")
+def setup_hebrew_fonts():
+    try:
+        # Get all available fonts
+        available_fonts = [f.name for f in fm.fontManager.ttflist]
+        logging.info(f"Total available fonts: {len(available_fonts)}")
         
-except Exception as e:
-    logging.warning(f"Font configuration error: {e}")
-    plt.rcParams['font.family'] = ['DejaVu Sans']
+        # Common Hebrew fonts that might be available (in order of preference)
+        hebrew_fonts = [
+            'Arial Unicode MS',  # Best Hebrew support
+            'Noto Sans Hebrew', 
+            'Arial Hebrew',
+            'David',
+            'Times New Roman',   # Often has Hebrew support
+            'Arial',            # Basic Hebrew support
+            'DejaVu Sans'       # Fallback
+        ]
+        
+        hebrew_font = None
+        for font in hebrew_fonts:
+            if font in available_fonts:
+                hebrew_font = font
+                logging.info(f"Found Hebrew-compatible font: {hebrew_font}")
+                break
+        
+        if hebrew_font:
+            plt.rcParams['font.family'] = [hebrew_font, 'sans-serif']
+            logging.info(f"Using Hebrew font: {hebrew_font}")
+        else:
+            # Last resort - try system default with Hebrew fallback
+            plt.rcParams['font.family'] = ['sans-serif']
+            logging.warning("No specific Hebrew font found, using system default")
+        
+        # Additional font settings for better Hebrew rendering
+        plt.rcParams['font.size'] = 10
+        plt.rcParams['font.weight'] = 'normal'
+        
+        return hebrew_font
+        
+    except Exception as e:
+        logging.error(f"Font configuration error: {e}")
+        plt.rcParams['font.family'] = ['sans-serif']
+        return None
+
+# Setup fonts
+current_font = setup_hebrew_fonts()
+
+def test_font_support():
+    """Test if the current font supports Hebrew characters"""
+    try:
+        import matplotlib.font_manager as fm
+        # Get current font
+        current_font_prop = fm.FontProperties(family=plt.rcParams['font.family'])
+        font_path = fm.findfont(current_font_prop)
+        logging.info(f"Current font path: {font_path}")
+        
+        # Test Hebrew character rendering
+        test_hebrew = "בדיקה"  # Hebrew word meaning "test"
+        logging.info(f"Testing Hebrew text: {test_hebrew}")
+        
+    except Exception as e:
+        logging.error(f"Font support test failed: {e}")
+
+# Test font support on startup
+test_font_support()
 
 def fix_hebrew_text(text):
     """
     Fix Hebrew text direction for matplotlib display.
-    Simple and reliable approach.
+    Enhanced version with better error handling.
     """
     if not text or not isinstance(text, str):
         return text
@@ -55,12 +96,18 @@ def fix_hebrew_text(text):
         return text  # No Hebrew, return as is
     
     try:
-        # Try using python-bidi if available (best solution)
+        # Try using python-bidi (best solution for mixed Hebrew/English text)
         from bidi.algorithm import get_display
-        return get_display(text)
+        result = get_display(text)
+        logging.debug(f"Hebrew text processed with bidi: '{text}' -> '{result}'")
+        return result
     except ImportError:
+        logging.warning("python-bidi not available, using fallback Hebrew processing")
         # Fallback: simple character reversal for pure Hebrew text
         return text[::-1] if hebrew_pattern.search(text) else text
+    except Exception as e:
+        logging.error(f"Error processing Hebrew text '{text}': {e}")
+        return text  # Return original text if processing fails
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -121,10 +168,13 @@ def plot_optional_point(point, label, color='green'):
     :param color: Color of the point and line
     """
     x, y = point
-    # Draw line from origin (0,0) to the point
-    plt.plot([0, x], [0, y], '--', color=color, alpha=0.7)
-    # Plot the point
-    plt.scatter([x], [y], color=color, s=100, marker='o')
+    
+    # Draw line from origin with improved styling
+    plt.plot([0, x], [0, y], '--', color=color, alpha=0.6, linewidth=2)
+    
+    # Plot the point with enhanced styling
+    plt.scatter([x], [y], color=color, s=120, marker='D', zorder=6,
+               edgecolors='white', linewidth=2)
     
     # Format coordinates
     coord_text = f'({int(x)}, {int(y)})'
@@ -134,6 +184,7 @@ def plot_optional_point(point, label, color='green'):
         # Fix Hebrew text direction
         fixed_label = fix_hebrew_text(label.strip())
         display_text = f'{fixed_label}\n{coord_text}'
+        logging.info(f"Plotting label: original='{label}', fixed='{fixed_label}'")
     else:
         display_text = coord_text
     
@@ -171,11 +222,18 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     # Close any existing figures
     plt.close('all')
     
-    plt.rc('lines', linewidth=2, color='red')
-    plt.rc('grid', linestyle="-", color='black')
+    # Modern styling
+    plt.style.use('default')  # Clean base style
     
     # Set figure size for larger chart display
-    fig, ax = plt.subplots(figsize=(10, 6.5))
+    fig, ax = plt.subplots(figsize=(10, 6.5), facecolor='white')
+    
+    # Set background color
+    ax.set_facecolor('#f8f9fa')  # Light gray background
+    
+    # Configure grid for better visibility
+    ax.grid(True, linestyle='-', alpha=0.5, color='#999999', linewidth=1)
+    ax.set_axisbelow(True)  # Put grid behind data
     
     plot_line(first_line_points, '-', 'blue')
     
@@ -215,10 +273,23 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     plt.ylim(0, max_y * 1.15)   # 20% margin for Y-axis  
 
     plt.gca().set_xscale('hydraulic-n-1.85')
-    plt.gca().xaxis.set_major_locator(MultipleLocator(230))
-    plt.gca().yaxis.set_major_locator(MultipleLocator(10))
-    plt.gca().yaxis.set_minor_locator(MultipleLocator(1))
-    plt.gca().tick_params(axis='both', which='both', length=0)
+    
+    # Force x-axis to show labels
+    ax.xaxis.set_visible(True)
+    ax.yaxis.set_visible(True)
+    
+    # Enhanced axis styling
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(MultipleLocator(100))  # More frequent x-axis ticks
+    ax.xaxis.set_minor_locator(MultipleLocator(50))   # Add minor ticks for x-axis
+    ax.yaxis.set_major_locator(MultipleLocator(10))
+    ax.yaxis.set_minor_locator(MultipleLocator(5))
+    
+    # Configure tick marks and labels
+    ax.tick_params(axis='both', which='both', length=0, width=0)  # Remove tick marks
+    ax.tick_params(axis='both', which='major', labelsize=11, colors='#000000')
+    ax.tick_params(axis='x', which='major', labelsize=12, colors='#000000', labelbottom=True)  # Ensure x-axis labels are visible
+    ax.tick_params(axis='y', which='major', labelleft=True)  # Ensure y-axis labels are visible
 
     # Style axis numbers with colors
     plt.tick_params(axis='x', which='major', left=False, bottom=True, right=False, top=False, 
@@ -231,7 +302,6 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     plt.ylabel('Pressure (psi)', fontsize=12, fontfamily='Times New Roman', fontweight='bold', color='#A23B72')  # Purple to match y-axis numbers
     plt.xlabel('Flow (gpm)', fontsize=12, fontfamily='Times New Roman', fontweight='bold', color='#2E86AB')  # Blue to match x-axis numbers
     plt.title('WATER SUPPLY ANALYSIS', fontsize=18, fontfamily='Times New Roman', fontweight='bold', pad=20, color='#e74c3c')  # Bright red for prominence
-    plt.grid(True)
 
     plt.tight_layout()
     
