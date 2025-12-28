@@ -6,13 +6,28 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Times New Roman", "Georgia", serif;
             margin: 0;
             padding: 20px;
+            letter-spacing: 0.5px;
         }
 
         h1 {
             text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #FF9800;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            color: #e74c3c !important;
+            font-weight: bold;
+            font-size: 28px;
+            font-family: "Times New Roman", "Georgia", serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            font-stretch: expanded;
         }
 
         form {
@@ -28,6 +43,10 @@
 
         legend {
             font-weight: bold;
+            color: #27ae60 !important;
+            font-size: 16px;
+            font-family: "Times New Roman", "Georgia", serif;
+            letter-spacing: 1px;
         }
 
         .measurement {
@@ -63,6 +82,9 @@
         label {
             display: block;
             margin-bottom: 5px;
+            font-family: "Times New Roman", "Georgia", serif;
+            font-weight: bold;
+            letter-spacing: 0.5px;
         }
 
         input[type="number"], input[type="text"] {
@@ -88,6 +110,10 @@
             border-radius: 4px;
             cursor: pointer;
             width: 100%;
+            font-family: "Times New Roman", "Georgia", serif;
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 1px;
         }
 
         button:hover {
@@ -100,8 +126,11 @@
         }
 
         .optional-section legend {
-            color: #666;
+            color: #f39c12 !important;
             font-style: italic;
+            font-size: 15px;
+            font-family: "Times New Roman", "Georgia", serif;
+            letter-spacing: 1px;
         }
 
         @media screen and (max-width: 600px) {
@@ -113,15 +142,60 @@
                 margin-right: 0;
                 margin-bottom: 10px;
             }
+
+            /* Mobile-friendly separators */
+            h1 {
+                max-width: 90%;
+                margin-bottom: 30px;
+                padding-bottom: 25px;
+            }
+
+            #chartContainer {
+                margin-top: 40px;
+                padding-top: 35px;
+            }
+
+            #chartContainer::before {
+                width: 90%;
+                max-width: 350px;
+            }
+
+            #dataTableContainer {
+                margin-top: 40px;
+                padding-top: 35px;
+            }
+
+            #dataTableContainer::before {
+                width: 90%;
+                max-width: 350px;
+            }
+
+            /* Adjust mobile styling */
+            #dataTableContainer h2 {
+                font-size: 24px;
+            }
         }
 
         #chartContainer {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 50px;
+            padding-top: 40px;
+            position: relative;
+        }
+
+        #chartContainer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 3px;
+            background: #4CAF50;
         }
 
         #chartImage {
-            max-width: 600px;  /* Match form max-width */
+            max-width: 900px;  /* Increased from 600px to allow larger charts */
             width: 100%;
             height: auto;
             border: 1px solid #ccc;
@@ -139,12 +213,32 @@
 
         #dataTableContainer {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 50px;
+            padding-top: 40px;
+            position: relative;
+        }
+
+        #dataTableContainer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 3px;
+            background: #2196F3;
         }
 
         #dataTableContainer h2 {
             margin-bottom: 15px;
-            color: #333;
+            color: #e74c3c;
+            font-family: "Times New Roman", "Georgia", serif;
+            font-weight: bold;
+            font-size: 28px;
+            margin-top: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            font-stretch: expanded;
         }
 
         #dataTable th, #dataTable td {
@@ -331,7 +425,6 @@
     </form>
 
     <div id="chartContainer" style="display: none;">
-        <h2>Generated Chart</h2>
         <img id="chartImage" src="" alt="Chart">
     </div>
 

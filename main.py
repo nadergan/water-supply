@@ -106,7 +106,10 @@ def plot_line(points, line_style='-', color='blue'):
         plt.plot(x[1:3], y[1:3], '--', color=color)  # Plot the line between the second and third points
     for txt in points[:3]:  # Label the first three points
         if (txt[0] != 0) or (txt[1] != 0):
-            plt.text(txt[0], txt[1], f'({int(txt[0])}, {int(txt[1])})', ha='left', va="center")
+            plt.text(txt[0], txt[1], f'({int(txt[0])}, {int(txt[1])})', 
+                    ha='left', va="center", fontsize=10, fontfamily='monospace', 
+                    fontweight='bold', bbox=dict(boxstyle="round,pad=0.3", 
+                    facecolor='white', edgecolor='gray', alpha=0.8))
     plt.scatter(x[:3], y[:3], color=color)  # Scatter the first three points
 
 def plot_optional_point(point, label, color='green'):
@@ -134,10 +137,11 @@ def plot_optional_point(point, label, color='green'):
     else:
         display_text = coord_text
     
-    # Add label with Hebrew support
+    # Add label with enhanced styling and Hebrew support
     plt.text(x, y, display_text, ha='center', va='bottom', 
-             bbox=dict(boxstyle="round,pad=0.3", facecolor=color, alpha=0.3),
-             fontsize=10, wrap=True)
+             bbox=dict(boxstyle="round,pad=0.4", facecolor=color, alpha=0.2, 
+                      edgecolor=color, linewidth=1.5),
+             fontsize=11, fontweight='bold', wrap=True)
 
 def calculated_samples(points):
     """
@@ -170,8 +174,8 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     plt.rc('lines', linewidth=2, color='red')
     plt.rc('grid', linestyle="-", color='black')
     
-    # Set figure size to match form width (600px max-width ≈ 8 inches at 75 DPI)
-    fig, ax = plt.subplots(figsize=(8, 5))
+    # Set figure size for larger chart display
+    fig, ax = plt.subplots(figsize=(10, 6.5))
     
     plot_line(first_line_points, '-', 'blue')
     
@@ -216,13 +220,17 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     plt.gca().yaxis.set_minor_locator(MultipleLocator(1))
     plt.gca().tick_params(axis='both', which='both', length=0)
 
-    plt.tick_params(axis='both', which='both', left=True, bottom=True, right=False, top=False, color='black')
+    # Style axis numbers with colors
+    plt.tick_params(axis='x', which='major', left=False, bottom=True, right=False, top=False, 
+                   color='#2E86AB', labelcolor='#2E86AB', labelsize=17, pad=8)  # Blue for x-axis
+    plt.tick_params(axis='y', which='major', left=True, bottom=False, right=False, top=False, 
+                   color='#A23B72', labelcolor='#A23B72', labelsize=17, pad=8)  # Purple for y-axis
     plt.tick_params(axis='both', which='minor', width=1, length=0)
 
-    # Set labels with Hebrew support
-    plt.ylabel('Pressure (psi)', fontsize=12)
-    plt.xlabel('Flow (gpm)', fontsize=12)
-    plt.title('WATER SUPPLY ANALYSIS', fontsize=14)
+    # Set labels with stylish fonts and colors
+    plt.ylabel('Pressure (psi)', fontsize=12, fontfamily='Times New Roman', fontweight='bold', color='#A23B72')  # Purple to match y-axis numbers
+    plt.xlabel('Flow (gpm)', fontsize=12, fontfamily='Times New Roman', fontweight='bold', color='#2E86AB')  # Blue to match x-axis numbers
+    plt.title('WATER SUPPLY ANALYSIS', fontsize=18, fontfamily='Times New Roman', fontweight='bold', pad=20, color='#e74c3c')  # Bright red for prominence
     plt.grid(True)
 
     plt.tight_layout()
