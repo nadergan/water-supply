@@ -243,8 +243,8 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     # Set background color
     ax.set_facecolor('#f8f9fa')  # Light gray background
     
-    # Configure grid for better appearance
-    ax.grid(True, linestyle='-', alpha=0.3, color='#cccccc', linewidth=0.8)
+    # Configure grid for better visibility
+    ax.grid(True, linestyle='-', alpha=0.5, color='#999999', linewidth=1)
     ax.set_axisbelow(True)  # Put grid behind data
     
     plot_line(first_line_points, '-', '#2E86AB')  # Modern blue
@@ -286,15 +286,22 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
 
     plt.gca().set_xscale('hydraulic-n-1.85')
     
+    # Force x-axis to show labels
+    ax.xaxis.set_visible(True)
+    ax.yaxis.set_visible(True)
+    
     # Enhanced axis styling
     ax = plt.gca()
-    ax.xaxis.set_major_locator(MultipleLocator(230))
+    ax.xaxis.set_major_locator(MultipleLocator(100))  # More frequent x-axis ticks
+    ax.xaxis.set_minor_locator(MultipleLocator(50))   # Add minor ticks for x-axis
     ax.yaxis.set_major_locator(MultipleLocator(10))
     ax.yaxis.set_minor_locator(MultipleLocator(5))
     
-    # Remove tick marks but keep labels
-    ax.tick_params(axis='both', which='both', length=0, width=0)
-    ax.tick_params(axis='both', which='major', labelsize=10, colors='#333333')
+    # Configure tick marks and labels
+    ax.tick_params(axis='both', which='both', length=0, width=0)  # Remove tick marks
+    ax.tick_params(axis='both', which='major', labelsize=11, colors='#000000')
+    ax.tick_params(axis='x', which='major', labelsize=12, colors='#000000', labelbottom=True)  # Ensure x-axis labels are visible
+    ax.tick_params(axis='y', which='major', labelleft=True)  # Ensure y-axis labels are visible
     
     # Style the spines (borders)
     for spine in ax.spines.values():
