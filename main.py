@@ -226,7 +226,7 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     plt.style.use('default')  # Clean base style
     
     # Set figure size for larger chart display
-    fig, ax = plt.subplots(figsize=(10, 6.5), facecolor='white')
+    fig, ax = plt.subplots(figsize=(12, 8), facecolor='white')
     
     # Set background color
     ax.set_facecolor('#f8f9fa')  # Light gray background
@@ -285,6 +285,15 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
     ax.yaxis.set_major_locator(MultipleLocator(10))
     ax.yaxis.set_minor_locator(MultipleLocator(5))
     
+    # Remove "0" from x-axis labels
+    from matplotlib.ticker import FuncFormatter
+    def format_x_axis(x, pos):
+        if x == 0:
+            return ''  # Return empty string for zero
+        return f'{int(x)}'
+    
+    ax.xaxis.set_major_formatter(FuncFormatter(format_x_axis))
+    
     # Configure tick marks and labels
     ax.tick_params(axis='both', which='both', length=0, width=0)  # Remove tick marks
     ax.tick_params(axis='both', which='major', labelsize=11, colors='#000000')
@@ -293,14 +302,14 @@ def main(save_path, first_line_points, second_line_points, optional_points=None)
 
     # Style axis numbers with colors
     plt.tick_params(axis='x', which='major', left=False, bottom=True, right=False, top=False, 
-                   color='#2E86AB', labelcolor='#2E86AB', labelsize=17, pad=8)  # Blue for x-axis
+                   color='#2E86AB', labelcolor='#2E86AB', labelsize=12, pad=8, labelrotation=45)  # Blue for x-axis, 45° rotation
     plt.tick_params(axis='y', which='major', left=True, bottom=False, right=False, top=False, 
-                   color='#A23B72', labelcolor='#A23B72', labelsize=17, pad=8)  # Purple for y-axis
+                   color='#A23B72', labelcolor='#A23B72', labelsize=12, pad=8)  # Purple for y-axis
     plt.tick_params(axis='both', which='minor', width=1, length=0)
 
     # Set labels with stylish fonts and colors
-    plt.ylabel('Pressure (psi)', fontsize=12, fontfamily='Times New Roman', fontweight='bold', color='#A23B72')  # Purple to match y-axis numbers
-    plt.xlabel('Flow (gpm)', fontsize=12, fontfamily='Times New Roman', fontweight='bold', color='#2E86AB')  # Blue to match x-axis numbers
+    plt.ylabel('Pressure (psi)', fontsize=16, fontfamily='Times New Roman', fontweight='bold', color='#A23B72')  # Purple to match y-axis numbers, larger font
+    plt.xlabel('Flow (gpm)', fontsize=16, fontfamily='Times New Roman', fontweight='bold', color='#2E86AB', labelpad=25)  # Blue to match x-axis numbers, larger font, extra padding
     plt.title('WATER SUPPLY ANALYSIS', fontsize=18, fontfamily='Times New Roman', fontweight='bold', pad=20, color='#e74c3c')  # Bright red for prominence
 
     plt.tight_layout()

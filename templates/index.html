@@ -10,6 +10,7 @@
             margin: 0;
             padding: 20px;
             letter-spacing: 0.5px;
+            font-size: 16px;
         }
 
         h1 {
@@ -17,7 +18,7 @@
             margin-bottom: 40px;
             padding-bottom: 30px;
             border-bottom: 3px solid #FF9800;
-            max-width: 900px;
+            max-width: 1100px;
             margin-left: auto;
             margin-right: auto;
             position: relative;
@@ -31,8 +32,9 @@
         }
 
         form {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
+            padding: 0 20px;
         }
 
         fieldset {
@@ -44,7 +46,7 @@
         legend {
             font-weight: bold;
             color: #27ae60 !important;
-            font-size: 16px;
+            font-size: 18px;
             font-family: "Times New Roman", "Georgia", serif;
             letter-spacing: 1px;
         }
@@ -85,15 +87,18 @@
             font-family: "Times New Roman", "Georgia", serif;
             font-weight: bold;
             letter-spacing: 0.5px;
+            font-size: 16px;
         }
 
         input[type="number"], input[type="text"] {
             width: 100%;
-            padding: 8px;
+            padding: 12px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
             direction: auto; /* Auto-detect text direction for Hebrew */
+            font-size: 16px;
+            font-family: Arial, sans-serif;
         }
         
         /* Specific styling for Hebrew labels */
@@ -105,14 +110,14 @@
         button {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 15px 25px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             width: 100%;
             font-family: "Times New Roman", "Georgia", serif;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
             letter-spacing: 1px;
         }
 
@@ -128,12 +133,17 @@
         .optional-section legend {
             color: #f39c12 !important;
             font-style: italic;
-            font-size: 15px;
+            font-size: 17px;
             font-family: "Times New Roman", "Georgia", serif;
             letter-spacing: 1px;
         }
 
-        @media screen and (max-width: 600px) {
+        @media screen and (max-width: 900px) {
+            form {
+                max-width: 90%;
+                padding: 0 15px;
+            }
+
             .measurement, .optional-point {
                 flex-direction: column;
             }
@@ -148,6 +158,7 @@
                 max-width: 90%;
                 margin-bottom: 30px;
                 padding-bottom: 25px;
+                font-size: 24px;
             }
 
             #chartContainer {
@@ -174,6 +185,32 @@
             #dataTableContainer h2 {
                 font-size: 24px;
             }
+
+            #dataTable {
+                max-width: 90%;
+            }
+
+            legend {
+                font-size: 16px;
+            }
+
+            .optional-section legend {
+                font-size: 15px;
+            }
+
+            label {
+                font-size: 14px;
+            }
+
+            input[type="number"], input[type="text"] {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 12px 20px;
+            }
         }
 
         #chartContainer {
@@ -189,13 +226,13 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 900px;
+            width: 1100px;
             height: 3px;
             background: #4CAF50;
         }
 
         #chartImage {
-            max-width: 900px;  /* Increased from 600px to allow larger charts */
+            max-width: 1100px;  /* Increased to accommodate larger chart */
             width: 100%;
             height: auto;
             border: 1px solid #ccc;
@@ -205,7 +242,7 @@
 
         #dataTable {
             width: 100%;
-            max-width: 600px;  /* Match form and chart max-width */
+            max-width: 800px;  /* Match form max-width */
             margin: 0 auto;    /* Center the table */
             border-collapse: collapse;
             margin-top: 20px;
@@ -224,7 +261,7 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 900px;
+            width: 1100px;
             height: 3px;
             background: #2196F3;
         }
