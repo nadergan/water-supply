@@ -8,6 +8,16 @@ services:
     networks:
       - water-network
 
+  # Served at https://yasmin.ganayem.com/הפרעה_או_בעיה/ (path prefix stripped for the container)
+  site1:
+    image: nginx:alpine
+    container_name: site1-web
+    restart: unless-stopped
+    volumes:
+      - ./site1/html:/usr/share/nginx/html:ro
+    networks:
+      - water-network
+
   nginx:
     image: nginx:alpine
     container_name: water-nginx
@@ -21,9 +31,11 @@ services:
       - ./certbot/www:/var/www/certbot
     depends_on:
       - water-app
+      - site1
     networks:
       - water-network
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    # Periodic reload picks up renewed certs from certbot without mounting Docker socket into certbot
+    command: "/bin/sh -c 'while :; do sleep 1h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
   certbot:
     image: certbot/certbot
@@ -32,7 +44,7 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --preferred-challenges http-01 --quiet; sleep 12h & wait $${!}; done;'"
 
 networks:
   water-network:

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>מבוך היועצת 2.0: התערבות והבחנה 🧠</title>
+    <style>
+        :root { --p: #6c5ce7; --s: #00b894; --d: #d63031; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        #app { width: 95%; max-width: 550px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
+        .score-box { background: var(--p); color: white; padding: 5px 15px; border-radius: 15px; display: inline-block; margin-bottom: 10px; font-weight: bold; }
+        .progress-bar { width: 100%; height: 10px; background: #eee; border-radius: 5px; margin: 15px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--p); width: 0%; transition: 0.5s; }
+        .image-box { width: 100%; height: 120px; background: #f1f2f6; border-radius: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 50px; border: 2px solid #eee; }
+        .card { perspective: 1000px; height: 480px; cursor: pointer; margin: 15px 0; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: 0.6s; transform-style: preserve-3d; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .front, .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; padding: 20px; box-sizing: border-box; border: 2px solid #eee; background: white; display: flex; flex-direction: column; text-align: right; }
+        .back { transform: rotateY(180deg); background: #f9f9fb; border-color: var(--p); justify-content: flex-start; overflow-y: auto; }
+        .arabic { color: #636e72; font-style: italic; font-size: 0.85em; margin-top: 2px; line-height: 1.3; direction: ltr; text-align: right; }
+        .btn-zone { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; color: white; }
+        .next-btn { background: var(--p); width: 100%; margin-top: 10px; }
+        .intervention-box { background: #ebf5ff; padding: 10px; border-radius: 10px; margin-top: 10px; border-right: 4px solid var(--p); font-size: 0.9em; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="score-box">⭐ נקודות אמפתיה: <span id="score">0</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+    
+    <div id="game">
+        <div class="card" id="mainCard" onclick="handleFlip()">
+            <div class="card-inner">
+                <div class="front" id="fContent"></div>
+                <div class="back" id="bContent"></div>
+            </div>
+        </div>
+        <div id="actions" class="btn-zone">
+            <button class="btn" style="background:var(--s)" onclick="check(0)">🟢 בעיה | مشكلة</button>
+            <button class="btn" style="background:var(--d)" onclick="check(1)">🔴 הפרעה | اضطراب</button>
+        </div>
+        <button id="nextBtn" class="btn next-btn hidden" onclick="next()">המקרה הבא ➔</button>
+    </div>
+
+    <div id="finish" class="hidden">
+        <div class="image-box">🎓</div>
+        <h2>הכשרה הושלמה!</h2>
+        <p>הפגנת חשיבה יועצתית מעמיקה ולא שיפוטית.</p>
+        <button class="btn next-btn" onclick="location.reload()">שחקי שוב</button>
+    </div>
+</div>
+
+<script>
+    const cases = [
+        { icon: "🔢", h: "דניאל (ב') מפריע רק בחשבון כשקשה לו. בספורט הוא רגוע.", a: "دنيال (ب) يشوش فقط في الحساب عندما يصعب عليه. في الرياضة هو هادئ.", ans: 0, r: "התנהגות תלויית הקשר (תסכול לימודי).", rA: "سلوك مرتبط بسياق معين (إحباط تعليمي).", iH: "התאמה לימודית וחיזוק תחושת מסוגלות.", iA: "ملاءمة تعليمية وتعزيز الشعور بالقدرة." },
+        { icon: "😤", h: "יסמין (ו') מסרבת לחוקי ביה\"ס ומתווכחת עם סמכות כבר חצי שנה.", a: "ياسمين (و) ترفض قوانين المدرسة وتجادل السلطة منذ نصف عام.", ans: 1, r: "דפוס עקבי וממושך של התנגדות לסמכות.", rA: "نمط مستمر وطويل الأمد من مقاومة السلطة.", iH: "תוכנית התנהגותית מערכתית והדרכת הורים.", iA: "خطة سلوكية منظوماتية وإرشاد أهلي." },
+        { icon: "💔", h: "עומר (ד') הפך לאלים בשבועיים האחרונים עקב גירושי הוריו.", a: "عمر (د) أصبح عنيفاً في الأسبوعين الأخيرين بسبب طلاق والديه.", ans: 0, r: "תגובה למשבר נקודתי ולא דפוס כרוני.", rA: "استجابة لأزمة محددة وليس نمطاً مزمناً.", iH: "תמיכה רגשית במשבר וכלים לוויסות.", iA: "دعم عاطفي في الأزمة وإعطاء أدوات للتنظيم." },
+        { icon: "💬", h: "ליאן (ח') מתחצפת למורות אך מביעה חרטה בשיחות אישיות.", a: "ليان (ح) تتصرف بوقاحة مع المعلمات لكنها تبدي ندماً في المحادثات الشخصية.", ans: 0, r: "קיום אמפתיה ויכולת ליצירת קשר אישי.", rA: "وجود تعاطف وقدرة على بناء علاقة شخصية.", iH: "שיחות ליווי לחיזוק הקשר המטיב.", iA: "محادثات مرافقة لتعزيز العلاقة الإيجابية." },
+        { icon: "😿", h: "אמיר (ה') פוגע בבעלי חיים, משקר ואינו מראה כל חרטה.", a: "أمير (هـ) يؤذي الحيوانات، يكذب ولا يظهر أي ندم.", ans: 1, r: "פגיעה בזכויות אחרים והיעדר אמפתיה.", rA: "المس بحقوق الآخرين وغياب التعاطف.", iH: "אבחון קליני דחוף ומעטפת רב-מקצועית.", iA: "تشخيص إكلينيكي فوري وغلاف متعدد المهنيات." },
+        { icon: "🌍", h: "יוסף (ט') מקהילה סגורה מסרב להקשיב למורות (נשים).", a: "يوسف (تاسع) من مجتمع مغلق يرفض الاستماع للمعلمات (النساء).", ans: 0, r: "פער תרבותי וקשיי הסתגלות.", rA: "فجوة ثقافية وصعوبات في التكيف.", iH: "גישור תרבותי ושיחה עם דמות סמכות גברית.", iA: "وساطة ثقافية ومحادثة مع شخصية سلطوية ذكورية." },
+        { icon: "⚡", h: "נועה (ג') מתפרצת בזעם ופוגעת בעצמה ללא סיבה נראית.", a: "نوعا (ج) تنفجر غضباً وتؤذي نفسها بدون سبب واضح.", ans: 1, r: "עוצמה גבוהה הדורשת בירור וויסות.", rA: "شدة عالية تتطلب فحص التنظيم.", iH: "תצפיות ABC והפניה לנוירולוג.", iA: "مراقبة ABC وتحويل لطبيب أعصاب." },
+        { icon: "🚑", h: "סאמי (י\"א) ונדליסט בביה\"ס אך מתנדב מצטיין במד\"א.", a: "سامي (11) مخرب في المدرسة لكنه متطوع ممتاز في الإسعاف.", ans: 0, r: "תפקוד חיובי בחוץ שולל הפרעת אישיות.", rA: "الأداء الإيجابي في الخارج ينفي اضطراب الشخصية.", iH: "גיוס כוחותיו למנהיגות בביה\"ס.", iA: "تجنيد قواه للقيادة في المدرسة." },
+        { icon: "🚶", h: "איתי (ד') נמנע ממשחקים חברתיים ומדווח על כאבי בטן.", a: "إيتي (د) يتجنب الألعاب الجماعية ويبلغ عن آلام بطن.", ans: 0, r: "חשד לחרדה חברתית, לא הפרעת התנהגות.", rA: "اشتباه بقلق اجتماعي، ليس اضطراب سلوك.", iH: "קבוצת מיומנויות חברתיות ותיווך.", iA: "مجموعة مهارات اجتماعية ووساطة." },
+        { icon: "👶", h: "דניאלה (ה') התדרדרה לימודית מיד לאחר הולדת אחיה.", a: "دانييلا (هـ) تراجعت تعليمياً فور ولادة أخيها.", ans: 0, r: "תגובה לשינוי משפחתי עמוק.", rA: "رد فعل لتغيير عائلي عميق.", iH: "הדרכת הורים ותמיכה רגשית בשינוי.", iA: "إرشاد أهلي ودعم عاطفي للتغيير." },
+        { icon: "🌀", h: "מאיה (ב') נשכבת על הרצפה בכל שינוי במערכת.", a: "مايا (ب) تستلقي على الأرض عند كل تغيير في البرنامج.", ans: 1, r: "קושי בוויסות חושי/רגשי הדורש בירור.", rA: "صعوبة في التنظيم الحسي تتطلب فحصاً.", iH: "אבחון מרפאה בעיסוק או נוירולוג.", iA: "تشخيص علاج وظيفي أو طبيب أعصاب." },
+        { icon: "🎒", h: "עידן (ח') מסרב להשתתף ומדווח על בדידות במעבר לחטיבה.", a: "عيدان (ح) يرفض المشاركة ويبلغ عن وحدة في الانتقال للإعدادية.", ans: 0, r: "קשיי הסתגלות נורמטיביים למעבר.", rA: "صعوبات تكيف طبيعية مع الانتقال.", iH: "תיווך חברתי וחיזוק תחושת שייכות.", iA: "وساطة اجتماعية وتعزيز الشعور بالانتماء." },
+        { icon: "✍️", h: "מיכאל (ו') מתפרץ בזעם בכל פעם שמבקשים ממנו לכתוב.", a: "ميخائيل (و) ينفجر غضباً في كل مرة يطلب منه الكتابة.", ans: 0, r: "תלוי הקשר - מעיד על קושי מוטורי/לימודי.", rA: "مرتبط بالسياق - يدل على صعوبة حركية.", iH: "אבחון לימודי והתאמות בכתיבה.", iA: "تشخيص تعليمي وملاءمات في الكتابة." }
+    ];
+
+    let curr = 0, score = 0, answered = false;
+
+    function render() {
+        const c = cases[curr];
+        answered = false;
+        document.getElementById('fill').style.width = `${((curr+1)/cases.length)*100}%`;
+        document.getElementById('mainCard').classList.remove('flipped');
+        document.getElementById('nextBtn').classList.add('hidden');
+        document.getElementById('actions').classList.remove('hidden');
+
+        document.getElementById('fContent').innerHTML = `
+            <div class="image-box">${c.icon}</div>
+            <p><b>המקרה:</b> ${c.h}</p>
+            <p class="arabic">${c.a}</p>
+            <p style="font-size:0.75em; color:var(--p); margin-top:auto;">בחרי תשובה למטה | اختاري الإجابة بالأسفل</p>
+        `;
+        document.getElementById('bContent').innerHTML = `
+            <h4 style="margin:0; color:var(--p);">הניתוח המקצועי:</h4>
+            <p style="margin:5px 0;"><b>${c.ans === 0 ? '🟢 בעיה התנהגותית' : '🔴 הפרעת התנהגות'}</b></p>
+            <p style="font-size:0.9em;">📌 ${c.r}</p>
+            <p class="arabic">${c.rA}</p>
+            <div class="intervention-box">
+                <b>🛠️ דרכי התערבות:</b><br>${c.iH}
+                <div class="arabic" style="color:#004085">${c.iA}</div>
+            </div>
+        `;
+    }
+
+    function check(choice) {
+        if(answered) return;
+        answered = true;
+        if(choice === cases[curr].ans) {
+            score += 10;
+            document.getElementById('score').innerText = score;
+        }
+        document.getElementById('mainCard').classList.add('flipped');
+        document.getElementById('actions').classList.add('hidden');
+        document.getElementById('nextBtn').classList.remove('hidden');
+    }
+
+    function handleFlip() { if(answered) document.getElementById('mainCard').classList.toggle('flipped'); }
+
+    function next() {
+        curr++;
+        if(curr < cases.length) render();
+        else {
+            document.getElementById('game').classList.add('hidden');
+            document.getElementById('finish').classList.remove('hidden');
+        }
+    }
+
+    render();
+</script>
+</body>
+</html>
+

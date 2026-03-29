@@ -3,3 +3,7 @@ static/charts/*
 
 # VS Code settings
 .vscode/
+
+# Let's Encrypt account keys and certificates (use scripts/tls-bootstrap.sh on the server)
+certbot/conf/
+certbot/www/
