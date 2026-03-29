@@ -15,3 +15,5 @@ openssl req -x509 -nodes -newkey rsa:2048 -days 2 \
   -out "$LIVE/fullchain.pem" \
   -subj "/CN=yasmin.ganayem.com"
 cp "$LIVE/fullchain.pem" "$LIVE/chain.pem"
+echo "Done. Start or restart the stack: docker compose up -d"
+echo "Then issue a real cert: CERTBOT_EMAIL=you@domain.com ./scripts/certbot-issue.sh"
