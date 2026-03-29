@@ -8,13 +8,15 @@ services:
     networks:
       - water-network
 
-  # Served at https://yasmin.ganayem.com/הפרעה_או_בעיה/ (path prefix stripped for the container)
-  site1:
+  # Path-based SPAs: one nginx serves all; add a volume per site + match in nginx/static-sites.conf + edge nginx.conf
+  static-sites:
     image: nginx:alpine
-    container_name: site1-web
+    container_name: static-sites
     restart: unless-stopped
     volumes:
-      - ./site1/html:/usr/share/nginx/html:ro
+      - ./nginx/static-sites.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./sites/הפרעה_או_בעיה:/var/www/הפרעה_או_בעיה:ro
+      - ./sites/demo:/var/www/demo:ro
     networks:
       - water-network
 
@@ -31,7 +33,7 @@ services:
       - ./certbot/www:/var/www/certbot
     depends_on:
       - water-app
-      - site1
+      - static-sites
     networks:
       - water-network
     # Periodic reload picks up renewed certs from certbot without mounting Docker socket into certbot
