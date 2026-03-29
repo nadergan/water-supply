@@ -1,45 +1,25 @@
 #!/bin/bash
+set -euo pipefail
 
-# Build and run script for Water Analysis Application
+# Local dev: build and run only water-app via Compose (shows up in `docker compose ps`).
+COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.dev.yaml"
 
-IMAGE_NAME="water-analysis"
-CONTAINER_NAME="water-app"
-PORT="3000"
+echo "Building Water Analysis image and starting water-app on port 3000..."
 
-echo "Building Water Analysis Docker image..."
+docker rm -f water-app 2>/dev/null || true
 
-# Build the Docker image
-docker build -t $IMAGE_NAME .
+docker compose $COMPOSE_FILES up -d --build water-app
 
-if [ $? -eq 0 ]; then
-    echo "✅ Build successful!"
-    
-    # Stop and remove existing container if it exists
-    docker stop $CONTAINER_NAME 2>/dev/null
-    docker rm $CONTAINER_NAME 2>/dev/null
-    
-    echo "Starting container on port $PORT..."
-    
-    # Run the container
-    docker run -d \
-        --name $CONTAINER_NAME \
-        -p $PORT:$PORT \
-        --restart unless-stopped \
-        $IMAGE_NAME
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ Container started successfully!"
-        echo "🌐 Application available at: http://localhost:$PORT"
-        echo ""
-        echo "Useful commands:"
-        echo "  View logs: docker logs -f $CONTAINER_NAME"
-        echo "  Stop app:  docker stop $CONTAINER_NAME"
-        echo "  Remove:    docker rm $CONTAINER_NAME"
-    else
-        echo "❌ Failed to start container"
-        exit 1
-    fi
-else
-    echo "❌ Build failed"
-    exit 1
-fi
+echo "✅ Container started successfully!"
+echo "🌐 Application available at: http://localhost:3000"
+echo ""
+echo "Compose sees this stack (app-only dev overlay):"
+echo "  docker compose $COMPOSE_FILES ps"
+echo ""
+echo "Useful commands:"
+echo "  View logs: docker compose $COMPOSE_FILES logs -f water-app"
+echo "  Stop:      docker compose $COMPOSE_FILES stop water-app"
+echo "  Remove:    docker compose $COMPOSE_FILES rm -sf water-app"
+echo ""
+echo "Full stack (nginx + static sites + TLS):"
+echo "  docker compose up -d"

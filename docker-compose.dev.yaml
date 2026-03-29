@@ -1,0 +1,9 @@
+# Local development: build from Dockerfile and expose the app on :3000.
+# Usage: docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d --build water-app
+# Production: use only docker-compose.yaml (no host port on water-app; nginx terminates TLS).
+
+services:
+  water-app:
+    build: .
+    ports:
+      - "3000:3000"
