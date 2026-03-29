@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# First-time (or extra-domain) certificate via HTTP-01. Requires:
-# - DNS yasmin.ganayem.com -> this host
-# - Stack up: docker compose up -d (nginx must serve /.well-known/acme-challenge/)
+# HTTP-01 certificate for explicit hostnames (NOT *.ganayem.com — use certbot-issue-wildcard.sh + DNS-01).
+# After issuance, either point nginx ssl_certificate to Certbot's live/<name>/ or keep per-host paths.
+# Requires: hostname DNS -> this host; stack up (nginx serves /.well-known/acme-challenge/).
 set -euo pipefail
 : "${CERTBOT_EMAIL:?Set CERTBOT_EMAIL to your address for Let's Encrypt}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

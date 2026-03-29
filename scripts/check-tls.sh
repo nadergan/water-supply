@@ -2,7 +2,7 @@
 # Show issuer and dates for the cert nginx loads (host path -> certbot volume).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PEM="$ROOT/certbot/conf/live/yasmin.ganayem.com/fullchain.pem"
+PEM="$ROOT/certbot/conf/live/ganayem-wildcard/fullchain.pem"
 if [[ ! -f "$PEM" ]]; then
   echo "No cert at $PEM — run ./scripts/tls-bootstrap.sh first."
   exit 1

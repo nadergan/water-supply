@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Run from cron (e.g. weekly): renews if due and reloads nginx so new certs are used immediately.
+# Run from cron (e.g. weekly): renews if due and reloads nginx.
+# Wildcard certs need DNS-01 on renew — configure a dns-* plugin in /etc/letsencrypt/renewal/*.conf or renewal may fail.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
