@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Masterclass | 20 Question Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .correct { background-color: #10b981 !important; color: white; border-color: #059669 !important; }
+        .incorrect { background-color: #ef4444 !important; color: white; border-color: #b91c1c !important; }
+        .quiz-option:disabled { cursor: not-allowed; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans pb-20">
+
+    <header class="bg-indigo-700 text-white shadow-lg p-6 mb-8 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Linux DevOps Level 1</h1>
+            <div id="progress-text" class="text-indigo-200 text-sm font-mono font-bold">Score: 0/20</div>
+        </div>
+        <div class="max-w-4xl mx-auto mt-4 bg-indigo-900 h-2 rounded-full overflow-hidden">
+            <div id="progress-bar" class="bg-green-400 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+            <h2 class="text-xl font-bold mb-3 text-indigo-700 underline">Training Quick-Ref</h2>
+            <p class="text-sm text-slate-600">Review the <strong>Kernel vs User Mode</strong> split, <strong>/etc/passwd</strong> structure (User:Pass:UID:GID:Home:Shell), and essential navigation (<strong>ls, cd, cat, man, sudo</strong>) before starting.</p>
+        </div>
+
+        <div id="quiz-container" class="space-y-6">
+            </div>
+
+        <div class="mt-12 text-center">
+            <button onclick="window.location.reload()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 rounded-full font-bold shadow-xl transition transform hover:scale-105">
+                Reset Everything
+            </button>
+        </div>
+    </main>
+
+    <script>
+        const questions = [
+            { q: "Which mode prevents a user app from crashing the entire system?", a: ["User Mode", "Kernel Mode"], c: 0 },
+            { q: "What is the UID of the root user?", a: ["1", "0", "1000", "500"], c: 1 },
+            { q: "Which command shows hidden files?", a: ["ls -h", "ls -a", "ls -l", "ls -x"], c: 1 },
+            { q: "Where are user account details (not passwords) stored?", a: ["/etc/shadow", "/etc/passwd", "/usr/bin", "/home"], c: 1 },
+            { q: "What command lets you 'jump' to the parent directory?", a: ["cd /", "cd ..", "cd ~", "cd -"], c: 1 },
+            { q: "Which part of the OS manages RAM allocation?", a: ["The Shell", "The Kernel", "The Terminal", "The CPU"], c: 1 },
+            { q: "What command opens the built-in manual?", a: ["help", "info", "man", "doc"], c: 2 },
+            { q: "How do you view a file's content without an editor?", a: ["ls", "cat", "cd", "man"], c: 1 },
+            { q: "Which command provides administrative privileges?", a: ["admin", "root", "sudo", "exec"], c: 2 },
+            { q: "In /etc/passwd, what is the last field in a user's entry?", a: ["Home Directory", "User ID", "Default Shell", "Password"], c: 2 },
+            { q: "What does the 'l' in 'ls -l' stand for?", a: ["List", "Long format", "Level", "Link"], c: 1 },
+            { q: "Which mode has direct access to hardware drivers?", a: ["Kernel Mode", "User Mode"], c: 0 },
+            { q: "If you type 'cd ~', where do you go?", a: ["Root directory", "Parent directory", "Home directory", "Last directory"], c: 2 },
+            { q: "Which directory usually holds system configuration files?", a: ["/bin", "/etc", "/var", "/dev"], c: 1 },
+            { q: "Is /etc/passwd readable by a standard (non-root) user?", a: ["Yes", "No"], c: 0 },
+            { q: "What is the primary role of the Kernel?", a: ["Resource Management", "UI Design", "Text Editing", "Web Browsing"], c: 0 },
+            { q: "What does 'cat /etc/hostname' do?", a: ["Changes the name", "Shows the system name", "Deletes the name", "None"], c: 1 },
+            { q: "Which command is used to move into a directory?", a: ["move", "goto", "cd", "ls"], c: 2 },
+            { q: "What is 'UID 1000' typically used for?", a: ["The Root User", "The first regular user", "System services", "Hardware"], c: 1 },
+            { q: "What happens when a User Mode app tries to access RAM directly?", a: ["It works", "The Kernel blocks it", "The CPU explodes", "It becomes Root"], c: 1 }
+        ];
+
+        let score = 0;
+        let answered = 0;
+
+        const container = document.getElementById('quiz-container');
+        
+        questions.forEach((data, i) => {
+            const div = document.createElement('div');
+            div.className = "bg-white p-6 rounded-lg shadow border border-slate-200 quiz-block";
+            div.innerHTML = `
+                <p class="font-bold mb-4 text-slate-800">${i+1}. ${data.q}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    ${data.a.map((opt, idx) => `
+                        <button onclick="check(this, ${i}, ${idx})" class="opt-btn p-3 text-left border rounded-lg hover:bg-slate-50 transition">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        function check(btn, qIdx, aIdx) {
+            const parent = btn.closest('.quiz-block');
+            const btns = parent.querySelectorAll('.opt-btn');
+            const correct = questions[qIdx].c;
+
+            btns.forEach(b => b.disabled = true);
+
+            if (aIdx === correct) {
+                btn.classList.add('correct');
+                score++;
+            } else {
+                btn.classList.add('incorrect');
+                btns[correct].classList.add('correct');
+            }
+
+            answered++;
+            const percent = (answered / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = percent + "%";
+            document.getElementById('progress-text').innerText = `Score: ${score} / ${questions.length}`;
+        }
+    </script>
+</body>
+</html>
+
