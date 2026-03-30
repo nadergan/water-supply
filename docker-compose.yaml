@@ -14,7 +14,7 @@ services:
     volumes:
       - ./nginx/static-sites.conf:/etc/nginx/conf.d/default.conf:ro
       - ./sites/הפרעה_או_בעיה:/var/www/הפרעה_או_בעיה:ro
-      - ./sites/demo:/var/www/demo:ro
+      - ./sites/linux_devops_01:/var/www/linux_devops_01:ro
     networks:
       - water-network
 
